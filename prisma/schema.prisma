@@ -1,0 +1,223 @@
+// Prisma schema for Healthcare Feedback Portal
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==================== ENUMS ====================
+
+enum AppRole {
+  admin
+  moderator
+  user
+  super_admin
+}
+
+enum FeedbackStatus {
+  new
+  in_review
+  resolved
+  closed
+}
+
+enum FeedbackType {
+  complaint
+  concern
+  compliment
+  safety_incident
+  comment
+}
+
+enum PendingEntryStatus {
+  pending
+  approved
+  rejected
+}
+
+enum FacilityStatus {
+  pending
+  approved
+  rejected
+}
+
+// ==================== MODELS ====================
+
+/// Admin users who manage the system
+model Admin {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password_hash String?
+  full_name     String?
+  role          AppRole   @default(admin)
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  created_by    String?
+
+  // Relations
+  creator       Admin?    @relation("AdminCreatedBy", fields: [created_by], references: [id])
+  created_admins Admin[]  @relation("AdminCreatedBy")
+
+  @@map("admins")
+  @@index([email])
+}
+
+/// Main feedback submissions from users
+model FeedbackSubmission {
+  id                        String         @id @default(uuid())
+  reference_id              String         @unique
+  anonymous                 Boolean        @default(false)
+  
+  // Reporter information
+  reporter_name             String?
+  reporter_email            String?
+  reporter_phone            String?
+  reporter_type             String?
+  reporter_relationship     String?
+  reporter_gender           String?
+  reporter_age_range        String?
+  reporter_disability_status String?
+  reporter_income_range     String?
+  reporter_education_level  String?
+  reporter_region           String?
+  reporter_marital_status   String?
+  reporter_geographic_setting String?
+  reporter_insurance_coverage String?
+  reporter_healthcare_frequency String?
+  reporter_sexuality        String?
+  
+  // Feedback details
+  feedback_type             FeedbackType
+  facility_type             String?
+  facility_state            String?
+  facility_lga              String?
+  facility_name             String?
+  incident_date             DateTime?
+  incident_time             String?
+  department                String?
+  location                  String?
+  staff_involved            String?
+  witnesses                 String?
+  description               String
+  severity                  Int?
+  
+  // Voice message
+  voice_message_url         String?
+  voice_message_duration    Int?
+  voice_transcription       String?
+  
+  // Additional info
+  additional_comments       String?
+  survey_token              String?        @unique
+  
+  // Status and tracking
+  status                    FeedbackStatus @default(new)
+  admin_notes               String?
+  assigned_department       String?
+  confirmation_email_sent   Boolean        @default(false)
+  followup_email_sent       Boolean        @default(false)
+  
+  created_at                DateTime       @default(now())
+  updated_at                DateTime       @updatedAt
+
+  // Relations
+  evidence                  FeedbackEvidence[]
+  survey_response           SurveyResponse?
+  pending_entries           PendingEntry[]
+
+  @@map("feedback_submissions")
+  @@index([reference_id])
+  @@index([status])
+  @@index([created_at])
+  @@index([feedback_type])
+}
+
+/// Evidence/attachments for feedback
+model FeedbackEvidence {
+  id          String   @id @default(uuid())
+  feedback_id String
+  file_name   String
+  file_url    String
+  file_type   String?
+  file_size   Int?
+  created_at  DateTime @default(now())
+
+  // Relations
+  feedback    FeedbackSubmission @relation(fields: [feedback_id], references: [id], onDelete: Cascade)
+
+  @@map("feedback_evidence")
+  @@index([feedback_id])
+}
+
+/// Survey responses linked to feedback
+model SurveyResponse {
+  id                   String   @id @default(uuid())
+  feedback_id          String?  @unique
+  overall_satisfaction Int?
+  staff_friendliness   Int?
+  communication        Int?
+  cleanliness          Int?
+  wait_time            Int?
+  would_recommend      Boolean?
+  comments             String?
+  created_at           DateTime @default(now())
+
+  // Relations
+  feedback             FeedbackSubmission? @relation(fields: [feedback_id], references: [id], onDelete: SetNull)
+
+  @@map("survey_responses")
+}
+
+/// Custom facilities added by users
+model CustomFacility {
+  id            String         @id @default(uuid())
+  name          String
+  facility_type String
+  state         String
+  lga           String
+  status        FacilityStatus @default(pending)
+  created_at    DateTime       @default(now())
+  approved_at   DateTime?
+  approved_by   String?
+
+  @@map("custom_facilities")
+  @@index([status])
+  @@index([state, lga])
+}
+
+/// Pending entries for custom values (sexuality, etc.)
+model PendingEntry {
+  id            String             @id @default(uuid())
+  entry_type    String
+  value         String
+  feedback_id   String?
+  facility_type String?
+  state         String?
+  lga           String?
+  status        PendingEntryStatus @default(pending)
+  created_at    DateTime           @default(now())
+  approved_at   DateTime?
+  approved_by   String?
+
+  // Relations
+  feedback      FeedbackSubmission? @relation(fields: [feedback_id], references: [id], onDelete: SetNull)
+
+  @@map("pending_entries")
+  @@index([status])
+  @@index([entry_type])
+}
+
+/// User role assignments (legacy, if needed)
+model UserRole {
+  id         String   @id @default(uuid())
+  user_id    String
+  role       AppRole
+  created_at DateTime @default(now())
+
+  @@map("user_roles")
+  @@index([user_id])
+}
