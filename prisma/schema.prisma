@@ -221,3 +221,27 @@ model UserRole {
   @@map("user_roles")
   @@index([user_id])
 }
+
+// ==================== HEALTH FACILITIES (GRID3 Data) ====================
+
+enum FacilityOwnershipType {
+  federal
+  state
+  private
+  unknown
+}
+
+/// Health facilities from GRID3 Nigeria dataset (~51,000 facilities)
+model HealthFacility {
+  id             String                @id @default(uuid())
+  state          String
+  lga            String
+  facility_name  String
+  ownership_type FacilityOwnershipType @default(unknown)
+  created_at     DateTime              @default(now())
+
+  @@map("health_facilities")
+  @@index([state])
+  @@index([state, lga])
+  @@index([state, lga, facility_name])
+}

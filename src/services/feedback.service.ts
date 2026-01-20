@@ -1,7 +1,8 @@
 import { prisma } from "../config/prisma.js";
-import { AppError, notFoundError } from "../middleware/errorHandler.js";
+import { notFoundError } from "../middleware/errorHandler.js";
 import type { FeedbackSubmission, FeedbackEvidence, FeedbackStatus, FeedbackType } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
+import { emailService } from "./email.service.js";
 
 /**
  * Feedback filter options
@@ -73,20 +74,63 @@ interface UpdateFeedbackDto {
  */
 export const feedbackService = {
   /**
-   * Creates a new feedback submission
+   * Generates a unique reference ID for feedback
+   * Format: FB-YYYYMMDD-XXXXX (e.g., FB-20260120-A3B7C)
    */
-  async create(data: CreateFeedbackDto): Promise<FeedbackSubmission> {
+  generateReferenceId(): string {
+    const date = new Date();
+    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
+    const randomPart = Math.random().toString(36).substring(2, 7).toUpperCase();
+    return `FB-${dateStr}-${randomPart}`;
+  },
+
+  /**
+   * Creates a new feedback submission and sends notification emails
+   */
+  async create(data: CreateFeedbackDto): Promise<FeedbackSubmission & { emailStatus?: { confirmationSent: boolean; followupSent: boolean; adminNotificationSent: boolean } }> {
     const surveyToken = uuidv4();
+    const referenceId = this.generateReferenceId();
 
     const feedback = await prisma.feedbackSubmission.create({
       data: {
         ...data,
+        reference_id: referenceId,
         incident_date: data.incident_date ? new Date(data.incident_date) : null,
         survey_token: surveyToken,
       },
     });
 
-    return feedback;
+    // Send emails if reporter provided an email address
+    let emailStatus: { confirmationSent: boolean; followupSent: boolean; adminNotificationSent: boolean } | undefined;
+    
+    if (data.reporter_email && !data.anonymous) {
+      try {
+        emailStatus = await emailService.sendFeedbackEmails({
+          email: data.reporter_email,
+          referenceId: feedback.reference_id,
+          feedbackId: feedback.id,
+          surveyToken: surveyToken,
+          feedbackType: data.feedback_type,
+        });
+        console.log(`Feedback emails sent for ${referenceId}:`, emailStatus);
+      } catch (error) {
+        console.error(`Failed to send feedback emails for ${referenceId}:`, error);
+        // Don't fail the feedback creation if emails fail
+      }
+    } else {
+      // Still notify admins even for anonymous feedback
+      try {
+        await emailService.sendAdminNotification({
+          referenceId: feedback.reference_id,
+          feedbackType: data.feedback_type,
+          feedbackId: feedback.id,
+        });
+      } catch (error) {
+        console.error(`Failed to send admin notification for ${referenceId}:`, error);
+      }
+    }
+
+    return { ...feedback, emailStatus };
   },
 
   /**
@@ -191,17 +235,38 @@ export const feedbackService = {
 
   /**
    * Updates a feedback submission (admin)
+   * Sends case closed email if status changes to 'closed'
    */
-  async update(id: string, data: UpdateFeedbackDto): Promise<FeedbackSubmission> {
-    // Verify feedback exists
-    await this.getById(id);
+  async update(id: string, data: UpdateFeedbackDto): Promise<FeedbackSubmission & { caseClosedEmailSent?: boolean }> {
+    // Get existing feedback to check for status change
+    const existingFeedback = await this.getById(id);
 
     const feedback = await prisma.feedbackSubmission.update({
       where: { id },
       data,
     });
 
-    return feedback;
+    // Send case closed email if status changed to 'closed' and reporter has email
+    let caseClosedEmailSent: boolean | undefined;
+    if (
+      data.status === "closed" &&
+      existingFeedback.status !== "closed" &&
+      feedback.reporter_email &&
+      !feedback.anonymous
+    ) {
+      try {
+        caseClosedEmailSent = await emailService.sendCaseClosedEmail({
+          email: feedback.reporter_email,
+          referenceId: feedback.reference_id,
+        });
+        console.log(`Case closed email sent for ${feedback.reference_id}: ${caseClosedEmailSent}`);
+      } catch (error) {
+        console.error(`Failed to send case closed email for ${feedback.reference_id}:`, error);
+        caseClosedEmailSent = false;
+      }
+    }
+
+    return { ...feedback, caseClosedEmailSent };
   },
 
   /**

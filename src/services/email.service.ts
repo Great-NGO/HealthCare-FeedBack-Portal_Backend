@@ -1,10 +1,20 @@
 import { Resend } from "resend";
-import { config } from "../config/env.js";
+import { prisma } from "../config/prisma.js";
 
 /**
  * Initialize Resend client
  */
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+/**
+ * Email sender address
+ */
+const EMAIL_FROM = "MyVoice MyHealth <no-reply@healthcare-feedback.i4nnova.com>";
+
+/**
+ * Default app URL for email links
+ */
+const getAppUrl = () => process.env.APP_URL || "http://localhost:8080";
 
 /**
  * Brand footer for emails
@@ -17,6 +27,9 @@ const brandFooter = `
     </div>
     <p style="color: #475569; font-size: 14px; margin: 0 0 10px 0;">
       Your Voice Matters in Healthcare
+    </p>
+    <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+      This is an automated message from MyVoice MyHealth. Please do not reply directly to this email.
     </p>
     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
       <p style="color: #94a3b8; font-size: 11px; margin: 0;">
@@ -40,13 +53,13 @@ export const emailService = {
     password: string;
     loginUrl?: string;
   }): Promise<boolean> {
-    const { email, fullName, role, password, loginUrl = "http://localhost:8080/admin/login" } = params;
+    const { email, fullName, role, password, loginUrl = `${getAppUrl()}/admin/login` } = params;
 
     try {
       const roleDisplay = role.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
       await resend.emails.send({
-        from: "MyVoice MyHealth <no-reply@healthcare-feedback.i4nnova.com>",
+        from: EMAIL_FROM,
         to: [email],
         subject: "You've Been Added as an Admin - MyVoice MyHealth",
         html: `
@@ -105,11 +118,11 @@ export const emailService = {
     resetToken: string;
     resetUrl?: string;
   }): Promise<boolean> {
-    const { email, fullName, resetToken, resetUrl = "http://localhost:8080/admin/reset-password" } = params;
+    const { email, fullName, resetToken, resetUrl = `${getAppUrl()}/admin/reset-password` } = params;
 
     try {
       await resend.emails.send({
-        from: "MyVoice MyHealth <no-reply@healthcare-feedback.i4nnova.com>",
+        from: EMAIL_FROM,
         to: [email],
         subject: "Password Reset - MyVoice MyHealth",
         html: `
@@ -142,5 +155,260 @@ export const emailService = {
       console.error("Failed to send password reset email:", error);
       return false;
     }
+  },
+
+  /**
+   * Sends feedback confirmation email to the reporter
+   * @param params - Email parameters including feedback details
+   * @returns Promise<boolean> - Whether the email was sent successfully
+   */
+  async sendFeedbackConfirmation(params: {
+    email: string;
+    referenceId: string;
+    feedbackId: string;
+  }): Promise<boolean> {
+    const { email, referenceId } = params;
+
+    try {
+      await resend.emails.send({
+        from: EMAIL_FROM,
+        to: [email],
+        subject: `Feedback Received - Reference: ${referenceId}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
+              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoice MyHealth</span>
+            </div>
+            <h1 style="color: #1e40af;">Thank You for Your Feedback</h1>
+            <p>We have successfully received your feedback submission.</p>
+            <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+              <p style="margin: 0;"><strong>Reference Number:</strong> ${referenceId}</p>
+            </div>
+            <p>Please keep this reference number for your records. You can use it to track the status of your submission.</p>
+            <p>Our team will review your feedback and take appropriate action.</p>
+            ${brandFooter}
+          </div>
+        `,
+      });
+
+      console.log(`Feedback confirmation email sent to ${email} for ${referenceId}`);
+      return true;
+    } catch (error) {
+      console.error("Failed to send feedback confirmation email:", error);
+      return false;
+    }
+  },
+
+  /**
+   * Sends follow-up email with survey link to the reporter
+   * @param params - Email parameters including survey token
+   * @returns Promise<boolean> - Whether the email was sent successfully
+   */
+  async sendFeedbackFollowup(params: {
+    email: string;
+    referenceId: string;
+    surveyToken: string;
+  }): Promise<boolean> {
+    const { email, referenceId, surveyToken } = params;
+    const appUrl = getAppUrl();
+    const surveyLink = `${appUrl}/survey?token=${surveyToken}`;
+
+    try {
+      await resend.emails.send({
+        from: EMAIL_FROM,
+        to: [email],
+        subject: `Follow Up on Feedback (Reference: ${referenceId})`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
+              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoice MyHealth</span>
+            </div>
+            <h1 style="color: #1e40af;">We Value Your Opinion</h1>
+            <p>Thank you for submitting your feedback (Reference: <strong>${referenceId}</strong>).</p>
+            <p>To help us continuously improve our services, we'd appreciate if you could take a moment to complete a brief survey about your experience.</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${surveyLink}" 
+                 style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                Complete Survey
+              </a>
+            </div>
+            <p style="color: #6b7280; font-size: 14px;">
+              This survey should only take 2-3 minutes to complete.
+            </p>
+            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+            <p style="color: #6b7280; font-size: 14px;">
+              If the button above doesn't work, copy and paste this link into your browser:<br>
+              <a href="${surveyLink}" style="color: #2563eb;">${surveyLink}</a>
+            </p>
+            ${brandFooter}
+          </div>
+        `,
+      });
+
+      console.log(`Feedback follow-up email sent to ${email} for ${referenceId}`);
+      return true;
+    } catch (error) {
+      console.error("Failed to send feedback follow-up email:", error);
+      return false;
+    }
+  },
+
+  /**
+   * Sends notification email to all active admins about new feedback
+   * @param params - Email parameters including feedback details
+   * @returns Promise<boolean> - Whether the emails were sent successfully
+   */
+  async sendAdminNotification(params: {
+    referenceId: string;
+    feedbackType: string;
+    feedbackId: string;
+  }): Promise<boolean> {
+    const { referenceId, feedbackType, feedbackId } = params;
+
+    try {
+      // Get all active admin emails
+      const admins = await prisma.admin.findMany({
+        where: { is_active: true },
+        select: { email: true },
+      });
+
+      if (!admins || admins.length === 0) {
+        console.log("No active admins to notify");
+        return true; // Not an error, just no admins
+      }
+
+      const adminEmails = admins.map((a) => a.email);
+      const appUrl = getAppUrl();
+      const feedbackTypeLabel = feedbackType
+        .replace("_", " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
+
+      console.log(`Sending admin notifications to ${adminEmails.length} admin(s)`);
+
+      await resend.emails.send({
+        from: EMAIL_FROM,
+        to: adminEmails,
+        subject: `New ${feedbackTypeLabel} Submitted - Reference: ${referenceId}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
+              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoice MyHealth</span>
+            </div>
+            <h1 style="color: #1e40af;">New Feedback Submission</h1>
+            <p>A new ${feedbackTypeLabel.toLowerCase()} has been submitted and requires your attention.</p>
+            <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+              <p style="margin: 0 0 8px 0;"><strong>Reference Number:</strong> ${referenceId}</p>
+              <p style="margin: 0;"><strong>Type:</strong> ${feedbackTypeLabel}</p>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${appUrl}/admin/feedback/${feedbackId}" 
+                 style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                View in Admin Dashboard
+              </a>
+            </div>
+            ${brandFooter}
+          </div>
+        `,
+      });
+
+      console.log("Admin notification emails sent");
+      return true;
+    } catch (error) {
+      console.error("Failed to send admin notification emails:", error);
+      return false;
+    }
+  },
+
+  /**
+   * Sends case closed notification email to the reporter
+   * @param params - Email parameters including feedback details
+   * @returns Promise<boolean> - Whether the email was sent successfully
+   */
+  async sendCaseClosedEmail(params: {
+    email: string;
+    referenceId: string;
+  }): Promise<boolean> {
+    const { email, referenceId } = params;
+    const appUrl = getAppUrl();
+
+    try {
+      await resend.emails.send({
+        from: EMAIL_FROM,
+        to: [email],
+        subject: `Case Resolved - Reference: ${referenceId}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="text-align: center; padding: 20px 0; background-color: #22c55e; margin-bottom: 30px;">
+              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoice MyHealth</span>
+            </div>
+            <h1 style="color: #16a34a;">Your Case Has Been Resolved</h1>
+            <p>Dear Respondent,</p>
+            <p>We are pleased to inform you that your feedback submission has been reviewed and the case has been resolved.</p>
+            <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #22c55e;">
+              <p style="margin: 0 0 8px 0;"><strong>Reference Number:</strong> ${referenceId}</p>
+              <p style="margin: 0;"><strong>Status:</strong> Closed</p>
+            </div>
+            <p>Thank you for taking the time to share your feedback with us. Your input is valuable in helping us improve healthcare services for everyone.</p>
+            <p>If you have any further concerns or would like to provide additional feedback, please don't hesitate to submit a new report through our portal.</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${appUrl}" 
+                 style="background-color: #22c55e; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                Visit MyVoice MyHealth
+              </a>
+            </div>
+            <p>Best regards,<br>The MyVoice MyHealth Team</p>
+            ${brandFooter}
+          </div>
+        `,
+      });
+
+      console.log(`Case closed email sent to ${email} for ${referenceId}`);
+      return true;
+    } catch (error) {
+      console.error("Failed to send case closed email:", error);
+      return false;
+    }
+  },
+
+  /**
+   * Sends all feedback-related emails (confirmation, follow-up, admin notification)
+   * This is the main method to call after feedback is created
+   * @param params - Complete feedback email parameters
+   * @returns Promise with status of each email type
+   */
+  async sendFeedbackEmails(params: {
+    email: string;
+    referenceId: string;
+    feedbackId: string;
+    surveyToken: string;
+    feedbackType: string;
+  }): Promise<{
+    confirmationSent: boolean;
+    followupSent: boolean;
+    adminNotificationSent: boolean;
+  }> {
+    const { email, referenceId, feedbackId, surveyToken, feedbackType } = params;
+
+    // Send all emails in parallel for better performance
+    const [confirmationSent, followupSent, adminNotificationSent] = await Promise.all([
+      this.sendFeedbackConfirmation({ email, referenceId, feedbackId }),
+      this.sendFeedbackFollowup({ email, referenceId, surveyToken }),
+      this.sendAdminNotification({ referenceId, feedbackType, feedbackId }),
+    ]);
+
+    // Update feedback record with email status
+    try {
+      await prisma.feedbackSubmission.update({
+        where: { id: feedbackId },
+        data: {
+          confirmation_email_sent: confirmationSent,
+          followup_email_sent: followupSent,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to update feedback email status:", error);
+    }
+
+    return { confirmationSent, followupSent, adminNotificationSent };
   },
 };

@@ -1,3 +1,6 @@
+// Load environment variables FIRST before any other imports
+import "dotenv/config";
+
 import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -8,6 +11,7 @@ import { prisma, disconnectPrisma } from "./config/prisma.js";
 import { errorHandler, notFoundHandler } from "./middleware/index.js";
 import { createSuccessResponse, type ApiResponse } from "./types/responses.js";
 import routes from "./routes/index.js";
+import { warmupHealthFacilityCache, stopKeepAlive } from "./services/healthFacility.service.js";
 
 // Validate environment variables
 validateEnv();
@@ -113,7 +117,7 @@ app.use(errorHandler);
  */
 const PORT = config.port;
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   console.log(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
@@ -126,6 +130,9 @@ const server = app.listen(PORT, () => {
 ║                                                           ║
 ╚═══════════════════════════════════════════════════════════╝
   `);
+
+  // Pre-warm cache and start database keep-alive
+  await warmupHealthFacilityCache();
 });
 
 /**
@@ -133,6 +140,9 @@ const server = app.listen(PORT, () => {
  */
 const shutdown = async (signal: string) => {
   console.log(`\n${signal} received. Shutting down gracefully...`);
+  
+  // Stop keep-alive pings
+  stopKeepAlive();
   
   server.close(async () => {
     console.log("HTTP server closed");
