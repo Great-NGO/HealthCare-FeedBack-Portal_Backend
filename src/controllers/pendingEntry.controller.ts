@@ -1,4 +1,4 @@
-import type { NextFunction, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { matchedData } from "express-validator";
 import { pendingEntryService } from "../services/pendingEntry.service.js";
 import { createSuccessResponse, type ApiResponse } from "../types/responses.js";
@@ -75,6 +75,28 @@ export const pendingEntryController = {
 
       res.status(200).json(
         createSuccessResponse(entry, "Pending entry status updated", req.originalUrl, 200)
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * GET /api/v1/pending-entries/approved/:type
+   * Public endpoint to get approved entries by type (for dropdowns)
+   */
+  async getApprovedByType(
+    req: Request,
+    res: Response<ApiResponse>,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { type } = req.params;
+
+      const values = await pendingEntryService.getApprovedByType(type);
+
+      res.status(200).json(
+        createSuccessResponse(values, "Approved entries retrieved successfully", req.originalUrl, 200)
       );
     } catch (error) {
       next(error);

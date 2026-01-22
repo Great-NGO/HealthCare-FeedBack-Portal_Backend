@@ -8,6 +8,7 @@ const cache = {
   states: null as string[] | null,
   statesExpiry: 0,
   lgas: new Map<string, { data: string[]; expiry: number }>(),
+  facilities: new Map<string, { data: { name: string; type: FacilityOwnershipType }[]; expiry: number }>(),
   CACHE_TTL: 60 * 60 * 1000, // 1 hour cache
   isWarmedUp: false,
 };
@@ -88,7 +89,8 @@ export const healthFacilityService = {
    */
   async getLGAsForState(state: string): Promise<string[]> {
     const now = Date.now();
-    const cacheKey = state.toLowerCase();
+    const normalizedState = state.trim();
+    const cacheKey = normalizedState.toLowerCase();
     const cached = cache.lgas.get(cacheKey);
     
     // Return cached data if valid
@@ -98,10 +100,14 @@ export const healthFacilityService = {
 
     const lgas = await prisma.healthFacility.findMany({
       where: {
-        state: {
-          equals: state,
-          mode: "insensitive",
-        },
+        /**
+         * NOTE: Use exact match (no case-insensitive mode) so Postgres can use
+         * the existing btree indexes (e.g. (state), (state,lga)).
+         *
+         * This is safe because the frontend selects `state` values that come
+         * directly from the database via `/health-facilities/states`.
+         */
+        state: { equals: normalizedState },
       },
       select: { lga: true },
       distinct: ["lga"],
@@ -126,16 +132,27 @@ export const healthFacilityService = {
     state: string,
     lga: string
   ): Promise<{ name: string; type: FacilityOwnershipType }[]> {
+    const normalizedState = state.trim();
+    const normalizedLga = lga.trim();
+
+    const now = Date.now();
+    const cacheKey = `${normalizedState}::${normalizedLga}`.toLowerCase();
+    const cached = cache.facilities.get(cacheKey);
+    if (cached && cached.expiry > now) {
+      return cached.data;
+    }
+
     const facilities = await prisma.healthFacility.findMany({
       where: {
-        state: {
-          equals: state,
-          mode: "insensitive",
-        },
-        lga: {
-          equals: lga,
-          mode: "insensitive",
-        },
+        /**
+         * NOTE: Use exact match (no case-insensitive mode) so Postgres can use
+         * the existing composite index (state, lga, facility_name).
+         *
+         * This is safe because the frontend selects `state`/`lga` values that
+         * come from DB-backed endpoints (`/states` and `/states/:state/lgas`).
+         */
+        state: { equals: normalizedState },
+        lga: { equals: normalizedLga },
       },
       select: {
         facility_name: true,
@@ -144,10 +161,14 @@ export const healthFacilityService = {
       orderBy: { facility_name: "asc" },
     });
 
-    return facilities.map((f) => ({
+    const result = facilities.map((f) => ({
       name: f.facility_name,
       type: f.ownership_type,
     }));
+
+    cache.facilities.set(cacheKey, { data: result, expiry: now + cache.CACHE_TTL });
+
+    return result;
   },
 
   /**
@@ -171,11 +192,13 @@ export const healthFacilityService = {
     };
 
     if (state) {
-      where.state = { equals: state, mode: "insensitive" };
+      // Exact match to stay index-friendly for location filters.
+      where.state = { equals: state.trim() };
     }
 
     if (lga) {
-      where.lga = { equals: lga, mode: "insensitive" };
+      // Exact match to stay index-friendly for location filters.
+      where.lga = { equals: lga.trim() };
     }
 
     const facilities = await prisma.healthFacility.findMany({

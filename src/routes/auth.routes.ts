@@ -5,6 +5,8 @@ import {
   loginValidators,
   refreshTokenValidators,
   changePasswordValidators,
+  forgotPasswordValidators,
+  resetPasswordValidators,
   validate,
 } from "../validators/index.js";
 
@@ -91,6 +93,30 @@ router.post(
   ],
   validate,
   authController.setPassword
+);
+
+/**
+ * @route   POST /api/v1/auth/forgot-password
+ * @desc    Request password reset - sends email with reset token
+ * @access  Public
+ */
+router.post(
+  "/forgot-password",
+  forgotPasswordValidators,
+  validate,
+  authController.forgotPassword
+);
+
+/**
+ * @route   POST /api/v1/auth/reset-password
+ * @desc    Reset password using reset token
+ * @access  Public
+ */
+router.post(
+  "/reset-password",
+  resetPasswordValidators,
+  validate,
+  authController.resetPassword
 );
 
 export default router;

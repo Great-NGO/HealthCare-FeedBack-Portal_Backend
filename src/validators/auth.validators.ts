@@ -73,3 +73,34 @@ export const changePasswordValidators = [
     .matches(/[0-9]/)
     .withMessage("New password must contain at least one number"),
 ];
+
+/**
+ * Validators for forgot password request
+ */
+export const forgotPasswordValidators = [
+  body("email")
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("Must be a valid email address"),
+];
+
+/**
+ * Validators for reset password request
+ */
+export const resetPasswordValidators = [
+  body("token")
+    .isString()
+    .notEmpty()
+    .withMessage("Reset token is required"),
+
+  body("new_password")
+    .isString()
+    .isLength({ min: 8, max: 128 })
+    .withMessage("New password must be between 8 and 128 characters")
+    .matches(/[a-z]/)
+    .withMessage("New password must contain at least one lowercase letter")
+    .matches(/[A-Z]/)
+    .withMessage("New password must contain at least one uppercase letter")
+    .matches(/[0-9]/)
+    .withMessage("New password must contain at least one number"),
+];

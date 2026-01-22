@@ -49,14 +49,16 @@ enum FacilityStatus {
 
 /// Admin users who manage the system
 model Admin {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  password_hash String?
-  full_name     String?
-  role          AppRole   @default(admin)
-  is_active     Boolean   @default(true)
-  created_at    DateTime  @default(now())
-  created_by    String?
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  password_hash         String?
+  full_name             String?
+  role                  AppRole   @default(admin)
+  is_active             Boolean   @default(true)
+  password_reset_token  String?
+  password_reset_expires DateTime?
+  created_at            DateTime  @default(now())
+  created_by            String?
 
   // Relations
   creator       Admin?    @relation("AdminCreatedBy", fields: [created_by], references: [id])
@@ -64,6 +66,7 @@ model Admin {
 
   @@map("admins")
   @@index([email])
+  @@index([password_reset_token])
 }
 
 /// Main feedback submissions from users
@@ -104,11 +107,14 @@ model FeedbackSubmission {
   witnesses                 String?
   description               String
   severity                  Int?
+  issue_classification      String?
+  issue_classification_other String?
   
   // Voice message
   voice_message_url         String?
   voice_message_duration    Int?
   voice_transcription       String?
+  voice_language            String?
   
   // Additional info
   additional_comments       String?

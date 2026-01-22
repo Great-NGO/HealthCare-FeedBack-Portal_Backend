@@ -1,7 +1,9 @@
 import { prisma } from "../config/prisma.js";
-import { AppError } from "../middleware/errorHandler.js";
+import { AppError, notFoundError } from "../middleware/errorHandler.js";
 import { generateAccessToken, generateRefreshToken, verifyToken, type JwtPayload } from "../utils/jwt.js";
 import { comparePassword, hashPassword } from "../utils/password.js";
+import { emailService } from "./email.service.js";
+import crypto from "crypto";
 
 /**
  * Authentication service
@@ -209,5 +211,94 @@ export const authService = {
     }
 
     return { message: "Password set successfully", email: admin.email };
+  },
+
+  /**
+   * Requests password reset - generates token and sends email
+   * @param email - Admin email
+   */
+  async forgotPassword(email: string) {
+    const admin = await prisma.admin.findUnique({
+      where: { email: email.toLowerCase() },
+      select: {
+        id: true,
+        email: true,
+        full_name: true,
+        is_active: true,
+      },
+    });
+
+    // Don't reveal if email exists or not (security best practice)
+    // Always return success message even if email doesn't exist
+    if (!admin || !admin.is_active) {
+      return { message: "If an account exists with this email, a password reset link has been sent." };
+    }
+
+    // Generate secure random token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetExpires = new Date();
+    resetExpires.setHours(resetExpires.getHours() + 1); // Token expires in 1 hour
+
+    // Save token to database
+    await prisma.admin.update({
+      where: { id: admin.id },
+      data: {
+        password_reset_token: resetToken,
+        password_reset_expires: resetExpires,
+      },
+    });
+
+    // Send password reset email
+    const emailSent = await emailService.sendPasswordReset({
+      email: admin.email,
+      fullName: admin.full_name,
+      resetToken: resetToken,
+    });
+
+    if (!emailSent) {
+      console.warn(`Failed to send password reset email to ${admin.email}`);
+    }
+
+    return { message: "If an account exists with this email, a password reset link has been sent." };
+  },
+
+  /**
+   * Resets password using reset token
+   * @param token - Password reset token
+   * @param newPassword - New password
+   */
+  async resetPassword(token: string, newPassword: string) {
+    // Find admin by reset token
+    const admin = await prisma.admin.findFirst({
+      where: {
+        password_reset_token: token,
+        password_reset_expires: {
+          gt: new Date(), // Token must not be expired
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+      },
+    });
+
+    if (!admin) {
+      throw new AppError(400, "INVALID_TOKEN", "Invalid or expired reset token");
+    }
+
+    // Hash new password
+    const passwordHash = await hashPassword(newPassword);
+
+    // Update password and clear reset token
+    await prisma.admin.update({
+      where: { id: admin.id },
+      data: {
+        password_hash: passwordHash,
+        password_reset_token: null,
+        password_reset_expires: null,
+      },
+    });
+
+    return { message: "Password reset successfully" };
   },
 };

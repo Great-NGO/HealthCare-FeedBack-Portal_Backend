@@ -64,7 +64,6 @@ export interface FeedbackSubmission {
   reporter_geographic_setting: string | null;
   reporter_insurance_coverage: string | null;
   reporter_healthcare_frequency: string | null;
-  reporter_sexuality: string | null;
   feedback_type: FeedbackType;
   facility_type: string | null;
   facility_state: string | null;
@@ -78,6 +77,8 @@ export interface FeedbackSubmission {
   witnesses: string | null;
   description: string;
   severity: number | null;
+  issue_classification: string | null;
+  issue_classification_other: string | null;
   voice_message_url: string | null;
   voice_message_duration: number | null;
   voice_transcription: string | null;
@@ -93,7 +94,7 @@ export interface FeedbackSubmission {
 }
 
 /**
- * Pending entry model (for custom values like sexuality)
+ * Pending entry model (for custom values)
  */
 export interface PendingEntry {
   id: string;

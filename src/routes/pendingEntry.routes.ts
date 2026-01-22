@@ -51,4 +51,14 @@ router.patch(
   pendingEntryController.updateStatus
 );
 
+/**
+ * @route   GET /api/v1/pending-entries/approved/:type
+ * @desc    Get approved entries by type (public, for dropdowns)
+ * @access  Public
+ */
+router.get(
+  "/approved/:type",
+  pendingEntryController.getApprovedByType
+);
+
 export default router;

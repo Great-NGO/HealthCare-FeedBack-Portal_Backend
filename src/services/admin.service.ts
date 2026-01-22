@@ -1,5 +1,5 @@
 import { prisma } from "../config/prisma.js";
-import { AppError, notFoundError, conflictError } from "../middleware/errorHandler.js";
+import { AppError, notFoundError, conflictError, forbiddenError } from "../middleware/errorHandler.js";
 import { hashPassword, generateSecurePassword } from "../utils/password.js";
 import { emailService } from "./email.service.js";
 import type { Admin, AppRole } from "@prisma/client";
@@ -47,7 +47,12 @@ export const adminService = {
    * Creates a new admin user with auto-generated password
    * Sends email notification with credentials
    */
-  async create(data: CreateAdminDto, createdBy: string): Promise<SafeAdmin & { emailSent: boolean }> {
+  async create(data: CreateAdminDto, createdBy: string, createdByRole?: string): Promise<SafeAdmin & { emailSent: boolean }> {
+    // Verify creator is super admin
+    if (createdByRole && createdByRole !== "super_admin") {
+      throw forbiddenError("Only super admins can create new admins");
+    }
+
     // Check if admin already exists
     const existing = await prisma.admin.findUnique({
       where: { email: data.email.toLowerCase() },
@@ -205,7 +210,12 @@ export const adminService = {
   /**
    * Updates an admin
    */
-  async update(id: string, data: UpdateAdminDto): Promise<SafeAdmin> {
+  async update(id: string, data: UpdateAdminDto, updatedByRole?: string): Promise<SafeAdmin> {
+    // Verify updater is super admin
+    if (updatedByRole && updatedByRole !== "super_admin") {
+      throw forbiddenError("Only super admins can update admins");
+    }
+
     // Verify admin exists
     await this.getById(id);
 
@@ -243,7 +253,12 @@ export const adminService = {
   /**
    * Resets admin password and sends email with new password
    */
-  async resetPassword(id: string): Promise<{ emailSent: boolean }> {
+  async resetPassword(id: string, resetByRole?: string): Promise<{ emailSent: boolean }> {
+    // Verify resetter is super admin
+    if (resetByRole && resetByRole !== "super_admin") {
+      throw forbiddenError("Only super admins can reset admin passwords");
+    }
+
     const admin = await this.getById(id);
 
     // Generate new password
@@ -269,7 +284,12 @@ export const adminService = {
   /**
    * Deletes an admin (soft delete by deactivating)
    */
-  async delete(id: string): Promise<void> {
+  async delete(id: string, deletedByRole?: string): Promise<void> {
+    // Verify deleter is super admin
+    if (deletedByRole && deletedByRole !== "super_admin") {
+      throw forbiddenError("Only super admins can delete admins");
+    }
+
     await this.getById(id);
 
     await prisma.admin.update({
@@ -281,7 +301,12 @@ export const adminService = {
   /**
    * Toggles admin active status
    */
-  async toggleActive(id: string): Promise<SafeAdmin> {
+  async toggleActive(id: string, toggledByRole?: string): Promise<SafeAdmin> {
+    // Verify toggler is super admin
+    if (toggledByRole && toggledByRole !== "super_admin") {
+      throw forbiddenError("Only super admins can toggle admin status");
+    }
+
     const admin = await this.getById(id);
 
     const updated = await prisma.admin.update({

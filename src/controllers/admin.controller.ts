@@ -25,7 +25,7 @@ export const adminController = {
         throw new Error("User not authenticated");
       }
 
-      const admin = await adminService.create(data, req.user.id);
+      const admin = await adminService.create(data, req.user.id, req.user.role);
 
       res.status(201).json(
         createSuccessResponse(admin, "Admin created successfully", req.originalUrl, 201)
@@ -97,7 +97,7 @@ export const adminController = {
     try {
       const { id, ...updateData } = matchedData(req) as { id: string; [key: string]: unknown };
 
-      const admin = await adminService.update(id, updateData);
+      const admin = await adminService.update(id, updateData, req.user.role);
 
       res.status(200).json(
         createSuccessResponse(admin, "Admin updated successfully", req.originalUrl, 200)
@@ -119,7 +119,7 @@ export const adminController = {
     try {
       const { id } = matchedData(req) as { id: string };
 
-      await adminService.delete(id);
+      await adminService.delete(id, req.user.role);
 
       res.status(200).json(
         createSuccessResponse(null, "Admin deactivated successfully", req.originalUrl, 200)
@@ -141,7 +141,7 @@ export const adminController = {
     try {
       const { id } = matchedData(req) as { id: string };
 
-      const admin = await adminService.toggleActive(id);
+      const admin = await adminService.toggleActive(id, req.user.role);
 
       res.status(200).json(
         createSuccessResponse(
@@ -168,7 +168,7 @@ export const adminController = {
     try {
       const { id } = matchedData(req) as { id: string };
 
-      const result = await adminService.resetPassword(id);
+      const result = await adminService.resetPassword(id, req.user.role);
 
       res.status(200).json(
         createSuccessResponse(

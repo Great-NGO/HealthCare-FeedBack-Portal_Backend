@@ -22,6 +22,97 @@ export const createFeedbackValidators = [
     .normalizeEmail()
     .withMessage("Must be a valid email address"),
 
+  body("reporter_type")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 2, max: 255 })
+    .withMessage("Reporter type must be between 2 and 255 characters"),
+
+  body("reporter_relationship")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 2, max: 255 })
+    .withMessage("Reporter relationship must be between 2 and 255 characters"),
+
+  body("reporter_gender")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage("Reporter gender must be between 1 and 100 characters"),
+
+  body("reporter_age_range")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage("Reporter age range must be between 1 and 100 characters"),
+
+  body("reporter_disability_status")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Reporter disability status must be between 1 and 255 characters"),
+
+  body("reporter_income_range")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Reporter income range must be between 1 and 255 characters"),
+
+  body("reporter_education_level")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Reporter education level must be between 1 and 255 characters"),
+
+  body("reporter_region")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Reporter region must be between 1 and 255 characters"),
+
+  body("reporter_marital_status")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Reporter marital status must be between 1 and 255 characters"),
+
+  body("reporter_geographic_setting")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Reporter geographic setting must be between 1 and 255 characters"),
+
+  body("reporter_insurance_coverage")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Reporter insurance coverage must be between 1 and 255 characters"),
+
+  body("reporter_healthcare_frequency")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Reporter healthcare frequency must be between 1 and 255 characters"),
+
+  body("reporter_sexuality")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Reporter sexuality must be between 1 and 255 characters"),
+
   body("reporter_phone")
     .optional({ nullable: true })
     .isString()
@@ -80,8 +171,47 @@ export const createFeedbackValidators = [
 
   body("severity")
     .optional({ nullable: true })
-    .isInt({ min: 1, max: 5 })
-    .withMessage("Severity must be between 1 and 5"),
+    // Frontend uses a 0–4 scale (0 = No Impact, 4 = Severe)
+    .isInt({ min: 0, max: 4 })
+    .withMessage("Severity must be between 0 and 4"),
+
+  body("issue_classification")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 500 })
+    .withMessage("Issue classification must be between 1 and 500 characters"),
+
+  body("issue_classification_other")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 500 })
+    .withMessage("Issue classification other must be between 1 and 500 characters"),
+
+  body("voice_message_url")
+    .optional({ nullable: true })
+    .isURL({ require_protocol: true })
+    .withMessage("voice_message_url must be a valid URL"),
+
+  body("voice_message_duration")
+    .optional({ nullable: true })
+    .isInt({ min: 0, max: 60 * 60 })
+    .withMessage("voice_message_duration must be a non-negative integer (seconds)"),
+
+  body("voice_transcription")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ max: 10000 })
+    .withMessage("voice_transcription must be at most 10000 characters"),
+
+  body("voice_language")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isIn(["english", "igbo", "yoruba"])
+    .withMessage("voice_language must be one of: english, igbo, yoruba"),
 
   body("additional_comments")
     .optional({ nullable: true })

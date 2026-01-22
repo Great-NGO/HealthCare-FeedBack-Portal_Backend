@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { uploadService } from "../services/upload.service.js";
 import { createSuccessResponse, type ApiResponse } from "../types/responses.js";
 import { AppError } from "../middleware/errorHandler.js";
+import { validateVoiceFile, validateEvidenceFile } from "../utils/fileValidation.js";
 
 /**
  * Upload controller
@@ -47,9 +48,12 @@ export const uploadController = {
     try {
       const { feedbackId } = req.params;
 
+      // Validate file
       if (!req.file) {
         throw new AppError(400, "NO_FILE", "No evidence file provided");
       }
+
+      validateEvidenceFile(req.file);
 
       const evidence = await uploadService.uploadEvidence(
         feedbackId,

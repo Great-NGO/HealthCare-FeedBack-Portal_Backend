@@ -53,9 +53,12 @@ interface CreateFeedbackDto {
   witnesses?: string | null;
   description: string;
   severity?: number | null;
+  issue_classification?: string | null;
+  issue_classification_other?: string | null;
   voice_message_url?: string | null;
   voice_message_duration?: number | null;
   voice_transcription?: string | null;
+  voice_language?: string | null;
   additional_comments?: string | null;
 }
 
@@ -86,6 +89,7 @@ export const feedbackService = {
 
   /**
    * Creates a new feedback submission and sends notification emails
+   * Also creates pending entries for custom "Others" values
    */
   async create(data: CreateFeedbackDto): Promise<FeedbackSubmission & { emailStatus?: { confirmationSent: boolean; followupSent: boolean; adminNotificationSent: boolean } }> {
     const surveyToken = uuidv4();
@@ -99,6 +103,133 @@ export const feedbackService = {
         survey_token: surveyToken,
       },
     });
+
+    // Create pending entries for custom "Others" values
+    const pendingEntriesToCreate: Array<{
+      entry_type: string;
+      value: string;
+      feedback_id: string;
+      facility_type?: string | null;
+      state?: string | null;
+      lga?: string | null;
+    }> = [];
+
+    // Check for custom facility name (verify if it exists in health_facilities table)
+    if (data.facility_name && data.facility_state && data.facility_lga) {
+      try {
+        const existingFacility = await prisma.healthFacility.findFirst({
+          where: {
+            name: { equals: data.facility_name, mode: 'insensitive' },
+            state: { equals: data.facility_state, mode: 'insensitive' },
+            lga: { equals: data.facility_lga, mode: 'insensitive' },
+          },
+        });
+
+        // Only create pending entry if facility doesn't exist in predefined list
+        if (!existingFacility) {
+          pendingEntriesToCreate.push({
+            entry_type: 'facility',
+            value: data.facility_name,
+            feedback_id: feedback.id,
+            facility_type: data.facility_type,
+            state: data.facility_state,
+            lga: data.facility_lga,
+          });
+        }
+      } catch (error) {
+        console.error('Error checking facility existence:', error);
+        // If check fails, create pending entry to be safe
+        pendingEntriesToCreate.push({
+          entry_type: 'facility',
+          value: data.facility_name,
+          feedback_id: feedback.id,
+          facility_type: data.facility_type,
+          state: data.facility_state,
+          lga: data.facility_lga,
+        });
+      }
+    }
+
+    // Check for custom department (if not in predefined list)
+    const predefinedDepartments = [
+      'Emergency', 'Outpatient', 'Inpatient', 'Surgery', 'Maternity', 'Paediatrics',
+      'Radiology', 'Laboratory', 'Pharmacy', 'Administration', 'Mental Health',
+      'Rehabilitation', 'ICU', 'Orthopaedics', 'Cardiology', 'Oncology', 'Dental',
+      'ENT', 'Ophthalmology', 'Gynaecology', 'Anaesthesiology', 'General Ward', 'Other'
+    ];
+    if (data.department && !predefinedDepartments.includes(data.department)) {
+      pendingEntriesToCreate.push({
+        entry_type: 'department',
+        value: data.department,
+        feedback_id: feedback.id,
+      });
+    }
+
+    // Check for custom location (if not in predefined list)
+    const predefinedLocations = [
+      'Reception', 'Waiting Area', 'Consultation Room', 'Ward', 'Operating Theatre',
+      'Pharmacy', 'Laboratory', 'Radiology', 'Emergency Room', 'Corridor',
+      'Cafeteria', 'Car Park', 'Restroom', 'Nurses Station', 'Doctor\'s Office', 'Other'
+    ];
+    if (data.location && !predefinedLocations.includes(data.location)) {
+      pendingEntriesToCreate.push({
+        entry_type: 'location',
+        value: data.location,
+        feedback_id: feedback.id,
+      });
+    }
+
+    // Check for custom issue classification other
+    if (data.issue_classification_other && data.issue_classification === 'Other') {
+      pendingEntriesToCreate.push({
+        entry_type: 'issue_classification',
+        value: data.issue_classification_other,
+        feedback_id: feedback.id,
+      });
+    }
+
+    // Create all pending entries (skip duplicates)
+    if (pendingEntriesToCreate.length > 0) {
+      try {
+        // Check for existing pending entries to avoid duplicates
+        const existingEntries = await prisma.pendingEntry.findMany({
+          where: {
+            OR: pendingEntriesToCreate.map(entry => ({
+              entry_type: entry.entry_type,
+              value: { equals: entry.value, mode: 'insensitive' },
+              ...(entry.state && entry.lga ? {
+                state: { equals: entry.state, mode: 'insensitive' },
+                lga: { equals: entry.lga, mode: 'insensitive' },
+              } : {}),
+            })),
+          },
+        });
+
+        // Filter out entries that already exist
+        const existingValues = new Set(
+          existingEntries.map(e => 
+            `${e.entry_type}:${e.value.toLowerCase()}:${e.state?.toLowerCase() || ''}:${e.lga?.toLowerCase() || ''}`
+          )
+        );
+
+        const newEntries = pendingEntriesToCreate.filter(entry => {
+          const key = `${entry.entry_type}:${entry.value.toLowerCase()}:${entry.state?.toLowerCase() || ''}:${entry.lga?.toLowerCase() || ''}`;
+          return !existingValues.has(key);
+        });
+
+        if (newEntries.length > 0) {
+          await prisma.pendingEntry.createMany({
+            data: newEntries,
+          });
+          console.log(`Created ${newEntries.length} pending entries for feedback ${referenceId}`);
+        } else {
+          console.log(`All pending entries already exist for feedback ${referenceId}`);
+        }
+      } catch (error) {
+        console.error(`Failed to create pending entries for ${referenceId}:`, error);
+        // Don't fail the feedback creation if pending entries fail
+      }
+    }
 
     // Send emails if reporter provided an email address
     let emailStatus: { confirmationSent: boolean; followupSent: boolean; adminNotificationSent: boolean } | undefined;
@@ -286,41 +417,93 @@ export const feedbackService = {
       };
     }
 
-    const items = await prisma.feedbackSubmission.findMany({
-      where,
-      select: {
-        id: true,
-        feedback_type: true,
-        status: true,
-        created_at: true,
-      },
-    });
-
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 
+    const [total, newThisWeek, byTypeRows, byStatusRows, byAgeRows, byGenderRows, byIssueClassificationRows] =
+      await Promise.all([
+        prisma.feedbackSubmission.count({ where }),
+        prisma.feedbackSubmission.count({
+          where: {
+            ...where,
+            created_at: { ...where.created_at, gte: weekAgo },
+          },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["feedback_type"],
+          where,
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["status"],
+          where,
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["reporter_age_range"],
+          where,
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["reporter_gender"],
+          where,
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["issue_classification"],
+          where: {
+            ...where,
+            issue_classification: { not: null },
+          },
+          _count: { id: true },
+        }),
+      ]);
+
     const byType: Record<string, number> = {};
-    const byStatus: Record<string, number> = {};
-    let newThisWeek = 0;
-
-    for (const item of items) {
-      // Count by type
-      byType[item.feedback_type] = (byType[item.feedback_type] || 0) + 1;
-
-      // Count by status
-      byStatus[item.status] = (byStatus[item.status] || 0) + 1;
-
-      // Count new this week
-      if (item.created_at >= weekAgo) {
-        newThisWeek++;
-      }
+    for (const row of byTypeRows) {
+      byType[row.feedback_type] = row._count.id;
     }
 
+    const byStatus: Record<string, number> = {};
+    for (const row of byStatusRows) {
+      byStatus[row.status] = row._count.id;
+    }
+
+    const byAgeRange: Record<string, number> = {};
+    for (const row of byAgeRows) {
+      const key = row.reporter_age_range ?? "Unknown";
+      byAgeRange[key] = row._count.id;
+    }
+
+    const byGender: Record<string, number> = {};
+    for (const row of byGenderRows) {
+      const key = row.reporter_gender ?? "Unknown";
+      byGender[key] = row._count.id;
+    }
+
+    // Get top 3 issue classifications
+    const byIssueClassification: Array<{ classification: string; count: number }> = [];
+    for (const row of byIssueClassificationRows) {
+      if (row.issue_classification) {
+        byIssueClassification.push({
+          classification: row.issue_classification,
+          count: row._count.id,
+        });
+      }
+    }
+    // Sort by count descending and take top 3
+    const top3Themes = byIssueClassification
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3);
+
     return {
-      total: items.length,
+      total,
       byType,
       byStatus,
+      byAgeRange,
+      byGender,
       newThisWeek,
+      top3Themes,
     };
   },
 

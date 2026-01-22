@@ -155,4 +155,51 @@ export const authController = {
       next(error);
     }
   },
+
+  /**
+   * POST /api/v1/auth/forgot-password
+   * Requests password reset - sends email with reset token
+   */
+  async forgotPassword(
+    req: AuthenticatedRequest,
+    res: Response<ApiResponse>,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { email } = matchedData(req) as { email: string };
+
+      const result = await authService.forgotPassword(email);
+
+      res.status(200).json(
+        createSuccessResponse(result, result.message, req.originalUrl, 200)
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * POST /api/v1/auth/reset-password
+   * Resets password using reset token
+   */
+  async resetPassword(
+    req: AuthenticatedRequest,
+    res: Response<ApiResponse>,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { token, new_password } = matchedData(req) as {
+        token: string;
+        new_password: string;
+      };
+
+      const result = await authService.resetPassword(token, new_password);
+
+      res.status(200).json(
+        createSuccessResponse(result, result.message, req.originalUrl, 200)
+      );
+    } catch (error) {
+      next(error);
+    }
+  },
 };
