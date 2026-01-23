@@ -119,7 +119,7 @@ export const feedbackService = {
       try {
         const existingFacility = await prisma.healthFacility.findFirst({
           where: {
-            name: { equals: data.facility_name, mode: 'insensitive' },
+            facility_name: { equals: data.facility_name, mode: 'insensitive' },
             state: { equals: data.facility_state, mode: 'insensitive' },
             lga: { equals: data.facility_lga, mode: 'insensitive' },
           },

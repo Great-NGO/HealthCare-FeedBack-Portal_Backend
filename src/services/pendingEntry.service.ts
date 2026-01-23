@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma.js";
 import { notFoundError } from "../middleware/errorHandler.js";
 import type { PendingEntry, PendingEntryStatus } from "@prisma/client";
+import { healthFacilityService } from "./healthFacility.service.js";
 
 /**
  * Pending entry filter options
@@ -123,6 +124,9 @@ export const pendingEntryService = {
             },
           });
           console.log(`Added approved facility to health_facilities: ${entry.value}`);
+          
+          // Invalidate cache so the new facility appears immediately in dropdowns
+          healthFacilityService.invalidateCache(entry.state, entry.lga);
         }
       }
       // For departments and locations, they'll be queried from pending_entries with status='approved'

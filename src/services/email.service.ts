@@ -9,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 /**
  * Email sender address
  */
-const EMAIL_FROM = "MyVoice MyHealth <no-reply@healthcare-feedback.i4nnova.com>";
+const EMAIL_FROM = "MyVoiceMyHealth <no-reply@healthcare-feedback.i4nnova.com>";
 
 /**
  * Default app URL for email links
@@ -22,18 +22,17 @@ const getAppUrl = () => process.env.APP_URL || "http://localhost:8080";
 const brandFooter = `
   <div style="margin-top: 30px; padding: 20px; background-color: #f8fafc; border-top: 3px solid #2563eb; text-align: center;">
     <div style="margin-bottom: 15px;">
-      <span style="font-size: 24px; font-weight: bold; color: #2563eb;">MyVoice</span>
-      <span style="font-size: 24px; font-weight: bold; color: #1e40af;"> MyHealth</span>
+      <span style="font-size: 24px; font-weight: bold; color: #2563eb;">MyVoiceMyHealth</span>
     </div>
     <p style="color: #475569; font-size: 14px; margin: 0 0 10px 0;">
       Your Voice Matters in Healthcare
     </p>
     <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-      This is an automated message from MyVoice MyHealth. Please do not reply directly to this email.
+      This is an automated message from MyVoiceMyHealth. Please do not reply directly to this email.
     </p>
     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
       <p style="color: #94a3b8; font-size: 11px; margin: 0;">
-        © ${new Date().getFullYear()} MyVoice MyHealth. All rights reserved.
+        © ${new Date().getFullYear()} MyVoiceMyHealth. All rights reserved.
       </p>
     </div>
   </div>
@@ -61,15 +60,15 @@ export const emailService = {
       await resend.emails.send({
         from: EMAIL_FROM,
         to: [email],
-        subject: "You've Been Added as an Admin - MyVoice MyHealth",
+        subject: "You've Been Added as an Admin - MyVoiceMyHealth",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoice MyHealth</span>
+              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
             </div>
             <h1 style="color: #1e40af;">Welcome to the Admin Team!</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
-            <p>You have been added as an administrator to the MyVoice MyHealth platform.</p>
+            <p>You have been added as an administrator to the MyVoiceMyHealth platform.</p>
             
             <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
               <h3 style="margin: 0 0 15px 0; color: #1e40af;">Your Login Credentials</h3>
@@ -124,11 +123,11 @@ export const emailService = {
       await resend.emails.send({
         from: EMAIL_FROM,
         to: [email],
-        subject: "Password Reset - MyVoice MyHealth",
+        subject: "Password Reset - MyVoiceMyHealth",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoice MyHealth</span>
+              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
             </div>
             <h1 style="color: #1e40af;">Password Reset Request</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
@@ -177,7 +176,7 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoice MyHealth</span>
+              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
             </div>
             <h1 style="color: #1e40af;">Thank You for Your Feedback</h1>
             <p>We have successfully received your feedback submission.</p>
@@ -221,7 +220,7 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoice MyHealth</span>
+              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
             </div>
             <h1 style="color: #1e40af;">We Value Your Opinion</h1>
             <p>Thank you for submitting your feedback (Reference: <strong>${referenceId}</strong>).</p>
@@ -292,7 +291,7 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoice MyHealth</span>
+              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
             </div>
             <h1 style="color: #1e40af;">New Feedback Submission</h1>
             <p>A new ${feedbackTypeLabel.toLowerCase()} has been submitted and requires your attention.</p>
@@ -339,7 +338,7 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #22c55e; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoice MyHealth</span>
+              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
             </div>
             <h1 style="color: #16a34a;">Your Case Has Been Resolved</h1>
             <p>Dear Respondent,</p>
@@ -353,10 +352,10 @@ export const emailService = {
             <div style="text-align: center; margin: 30px 0;">
               <a href="${appUrl}" 
                  style="background-color: #22c55e; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-                Visit MyVoice MyHealth
+                Visit MyVoiceMyHealth
               </a>
             </div>
-            <p>Best regards,<br>The MyVoice MyHealth Team</p>
+            <p>Best regards,<br>The MyVoiceMyHealth Team</p>
             ${brandFooter}
           </div>
         `,

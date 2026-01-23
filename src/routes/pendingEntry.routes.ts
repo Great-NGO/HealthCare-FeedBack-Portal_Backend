@@ -11,7 +11,18 @@ import {
 
 const router = Router();
 
-// All routes require admin access
+/**
+ * @route   GET /api/v1/pending-entries/approved/:type
+ * @desc    Get approved entries by type (public, for dropdowns)
+ * @access  Public
+ * NOTE: This route must be defined BEFORE the auth middleware to remain public
+ */
+router.get(
+  "/approved/:type",
+  pendingEntryController.getApprovedByType
+);
+
+// All other routes require admin access
 router.use(authenticate);
 router.use(requireAdmin);
 
@@ -49,16 +60,6 @@ router.patch(
   [...idParamValidator, ...updatePendingEntryValidators],
   validate,
   pendingEntryController.updateStatus
-);
-
-/**
- * @route   GET /api/v1/pending-entries/approved/:type
- * @desc    Get approved entries by type (public, for dropdowns)
- * @access  Public
- */
-router.get(
-  "/approved/:type",
-  pendingEntryController.getApprovedByType
 );
 
 export default router;

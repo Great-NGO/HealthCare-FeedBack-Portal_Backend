@@ -222,6 +222,31 @@ export const healthFacilityService = {
   },
 
   /**
+   * Invalidate cache for a specific state/LGA combination
+   * Call this when a new facility is added to ensure it appears immediately
+   */
+  invalidateCache(state?: string, lga?: string): void {
+    if (state && lga) {
+      // Invalidate specific state/LGA facility cache
+      const cacheKey = `${state.trim()}::${lga.trim()}`.toLowerCase();
+      cache.facilities.delete(cacheKey);
+      console.log(`[HealthFacility] Invalidated cache for ${state}/${lga}`);
+    } else if (state) {
+      // Invalidate LGA cache for the state
+      const cacheKey = state.trim().toLowerCase();
+      cache.lgas.delete(cacheKey);
+      console.log(`[HealthFacility] Invalidated LGA cache for ${state}`);
+    } else {
+      // Invalidate all caches
+      cache.states = null;
+      cache.statesExpiry = 0;
+      cache.lgas.clear();
+      cache.facilities.clear();
+      console.log(`[HealthFacility] Invalidated all caches`);
+    }
+  },
+
+  /**
    * Get facility statistics
    */
   async getStats(): Promise<{
