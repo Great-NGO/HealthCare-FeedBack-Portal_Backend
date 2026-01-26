@@ -3,6 +3,7 @@ import { matchedData } from "express-validator";
 import { adminService } from "../services/admin.service.js";
 import { createSuccessResponse, type ApiResponse } from "../types/responses.js";
 import type { AuthenticatedRequest } from "../middleware/auth.js";
+import type { AppRole } from "@prisma/client";
 
 /**
  * Admin controller
@@ -19,13 +20,18 @@ export const adminController = {
     next: NextFunction
   ): Promise<void> {
     try {
-      const data = matchedData(req);
+      const data = matchedData(req) as { email: string; full_name?: string; role?: string };
+      const createData = {
+        email: data.email,
+        full_name: data.full_name,
+        role: data.role as AppRole | undefined,
+      };
 
       if (!req.user) {
         throw new Error("User not authenticated");
       }
 
-      const admin = await adminService.create(data, req.user.id, req.user.role);
+      const admin = await adminService.create(createData, req.user.id, req.user.role);
 
       res.status(201).json(
         createSuccessResponse(admin, "Admin created successfully", req.originalUrl, 201)
@@ -97,6 +103,10 @@ export const adminController = {
     try {
       const { id, ...updateData } = matchedData(req) as { id: string; [key: string]: unknown };
 
+      if (!req.user) {
+        throw new Error("User not authenticated");
+      }
+
       const admin = await adminService.update(id, updateData, req.user.role);
 
       res.status(200).json(
@@ -119,6 +129,10 @@ export const adminController = {
     try {
       const { id } = matchedData(req) as { id: string };
 
+      if (!req.user) {
+        throw new Error("User not authenticated");
+      }
+
       await adminService.delete(id, req.user.role);
 
       res.status(200).json(
@@ -140,6 +154,10 @@ export const adminController = {
   ): Promise<void> {
     try {
       const { id } = matchedData(req) as { id: string };
+
+      if (!req.user) {
+        throw new Error("User not authenticated");
+      }
 
       const admin = await adminService.toggleActive(id, req.user.role);
 
@@ -167,6 +185,10 @@ export const adminController = {
   ): Promise<void> {
     try {
       const { id } = matchedData(req) as { id: string };
+
+      if (!req.user) {
+        throw new Error("User not authenticated");
+      }
 
       const result = await adminService.resetPassword(id, req.user.role);
 

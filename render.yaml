@@ -2,8 +2,23 @@ services:
   - type: web
     name: healthcare-feedback-portal-backend
     env: node
-    buildCommand: npm install
-    startCommand: node dist/index.js
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
+      # IMPORTANT: Set these environment variables in Render Dashboard (Settings > Environment):
+      # Required:
+      #   - SUPABASE_URL=https://frhuvymqkhhsylziqmnv.supabase.co
+      #   - SUPABASE_ANON_KEY=your-anon-key
+      #   - DATABASE_URL=your-postgresql-connection-string
+      #   - JWT_SECRET=your-secure-secret-min-32-chars
+      # Optional but recommended:
+      #   - SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+      #   - CORS_ORIGIN=https://your-frontend-domain.com
+      #   - JWT_EXPIRES_IN=7d
+      #   - RESEND_API_KEY=your-resend-api-key
+      # Note: Region and plan are configured in Render Dashboard, not here

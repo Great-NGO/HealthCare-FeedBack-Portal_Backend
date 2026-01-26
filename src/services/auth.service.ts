@@ -1,5 +1,5 @@
 import { prisma } from "../config/prisma.js";
-import { AppError, notFoundError } from "../middleware/errorHandler.js";
+import { AppError } from "../middleware/errorHandler.js";
 import { generateAccessToken, generateRefreshToken, verifyToken, type JwtPayload } from "../utils/jwt.js";
 import { comparePassword, hashPassword } from "../utils/password.js";
 import { emailService } from "./email.service.js";

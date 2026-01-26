@@ -19,9 +19,14 @@ export const feedbackController = {
     next: NextFunction
   ): Promise<void> {
     try {
-      const data = matchedData(req);
+      const data = matchedData(req) as {
+        anonymous: boolean;
+        feedback_type: string;
+        description: string;
+        [key: string]: unknown;
+      };
 
-      const feedback = await feedbackService.create(data);
+      const feedback = await feedbackService.create(data as any);
 
       res.status(201).json(
         createSuccessResponse(
@@ -125,8 +130,9 @@ export const feedbackController = {
   ): Promise<void> {
     try {
       const { referenceId } = req.params;
+      const refId = typeof referenceId === 'string' ? referenceId : Array.isArray(referenceId) ? referenceId[0] : '';
 
-      const feedback = await feedbackService.getByReferenceId(referenceId);
+      const feedback = await feedbackService.getByReferenceId(refId);
 
       res.status(200).json(
         createSuccessResponse(feedback, "Feedback retrieved successfully", req.originalUrl, 200)

@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { uploadService } from "../services/upload.service.js";
 import { createSuccessResponse, type ApiResponse } from "../types/responses.js";
 import { AppError } from "../middleware/errorHandler.js";
-import { validateVoiceFile, validateEvidenceFile } from "../utils/fileValidation.js";
+import { validateEvidenceFile } from "../utils/fileValidation.js";
 
 /**
  * Upload controller
@@ -47,6 +47,7 @@ export const uploadController = {
   ): Promise<void> {
     try {
       const { feedbackId } = req.params;
+      const fbId = typeof feedbackId === 'string' ? feedbackId : Array.isArray(feedbackId) ? feedbackId[0] : '';
 
       // Validate file
       if (!req.file) {
@@ -56,7 +57,7 @@ export const uploadController = {
       validateEvidenceFile(req.file);
 
       const evidence = await uploadService.uploadEvidence(
-        feedbackId,
+        fbId,
         req.file.buffer,
         req.file.originalname,
         req.file.mimetype,

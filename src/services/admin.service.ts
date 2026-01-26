@@ -1,5 +1,5 @@
 import { prisma } from "../config/prisma.js";
-import { AppError, notFoundError, conflictError, forbiddenError } from "../middleware/errorHandler.js";
+import { notFoundError, conflictError, forbiddenError } from "../middleware/errorHandler.js";
 import { hashPassword, generateSecurePassword } from "../utils/password.js";
 import { emailService } from "./email.service.js";
 import type { Admin, AppRole } from "@prisma/client";
@@ -36,7 +36,10 @@ interface AdminFilters {
 /**
  * Admin without password_hash
  */
-type SafeAdmin = Omit<Admin, "password_hash">;
+type SafeAdmin = Omit<Admin, "password_hash"> & {
+  password_reset_token: string | null;
+  password_reset_expires: Date | null;
+};
 
 /**
  * Admin service
@@ -82,6 +85,8 @@ export const adminService = {
         full_name: true,
         role: true,
         is_active: true,
+        password_reset_token: true,
+        password_reset_expires: true,
         created_at: true,
         created_by: true,
       },
@@ -114,6 +119,8 @@ export const adminService = {
         full_name: true,
         role: true,
         is_active: true,
+        password_reset_token: true,
+        password_reset_expires: true,
         created_at: true,
         created_by: true,
       },
@@ -138,6 +145,8 @@ export const adminService = {
         full_name: true,
         role: true,
         is_active: true,
+        password_reset_token: true,
+        password_reset_expires: true,
         created_at: true,
         created_by: true,
       },
@@ -228,6 +237,8 @@ export const adminService = {
         full_name: true,
         role: true,
         is_active: true,
+        password_reset_token: true,
+        password_reset_expires: true,
         created_at: true,
         created_by: true,
       },
@@ -318,6 +329,8 @@ export const adminService = {
         full_name: true,
         role: true,
         is_active: true,
+        password_reset_token: true,
+        password_reset_expires: true,
         created_at: true,
         created_by: true,
       },

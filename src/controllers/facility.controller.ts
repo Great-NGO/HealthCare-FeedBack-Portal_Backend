@@ -17,7 +17,7 @@ export const facilityController = {
     next: NextFunction
   ): Promise<void> {
     try {
-      const data = matchedData(req);
+      const data = matchedData(req) as { name: string; facility_type: string; state: string; lga: string };
 
       const facility = await facilityService.create(data);
 

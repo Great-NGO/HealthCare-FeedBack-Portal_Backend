@@ -22,7 +22,7 @@ export const uploadService = {
     const fileName = `voice-${Date.now()}-${uuidv4()}.webm`;
     const filePath = `voice-messages/${fileName}`;
 
-    const { data, error } = await supabaseAdmin.storage
+    const { error } = await supabaseAdmin.storage
       .from("feedback-files")
       .upload(filePath, fileBuffer, {
         contentType,
@@ -59,7 +59,7 @@ export const uploadService = {
     const safeName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
     const filePath = `evidence/${feedbackId}/${Date.now()}-${safeName}`;
 
-    const { data, error: uploadError } = await supabaseAdmin.storage
+    const { error: uploadError } = await supabaseAdmin.storage
       .from("feedback-files")
       .upload(filePath, fileBuffer, {
         contentType,

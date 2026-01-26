@@ -92,8 +92,9 @@ export const pendingEntryController = {
   ): Promise<void> {
     try {
       const { type } = req.params;
+      const typeParam = typeof type === 'string' ? type : Array.isArray(type) ? type[0] : '';
 
-      const values = await pendingEntryService.getApprovedByType(type);
+      const values = await pendingEntryService.getApprovedByType(typeParam);
 
       res.status(200).json(
         createSuccessResponse(values, "Approved entries retrieved successfully", req.originalUrl, 200)

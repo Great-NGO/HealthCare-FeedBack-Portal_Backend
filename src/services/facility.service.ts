@@ -1,5 +1,5 @@
 import { prisma } from "../config/prisma.js";
-import { AppError, notFoundError } from "../middleware/errorHandler.js";
+import { notFoundError } from "../middleware/errorHandler.js";
 import type { CustomFacility, FacilityStatus } from "@prisma/client";
 
 /**

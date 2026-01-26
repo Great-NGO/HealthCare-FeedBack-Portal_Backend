@@ -12,7 +12,7 @@ const upload = multer({
   limits: {
     fileSize: Math.max(FILE_SIZE_LIMITS.voice, FILE_SIZE_LIMITS.evidence), // Use the larger limit
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, _file, cb) => {
     // Basic file filter - detailed validation happens in controllers
     cb(null, true);
   },
@@ -21,10 +21,10 @@ const upload = multer({
 /**
  * Error handler for multer errors
  */
-const handleMulterError = (err: any, req: Request, res: Response, next: NextFunction) => {
+const handleMulterError = (err: any, req: Request, res: Response, next: NextFunction): void => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         error: "FILE_TOO_LARGE",
         message: "File size exceeds the maximum allowed limit",
@@ -33,8 +33,9 @@ const handleMulterError = (err: any, req: Request, res: Response, next: NextFunc
         path: req.originalUrl,
         timestamp: new Date().toISOString(),
       });
+      return;
     }
-    return res.status(400).json({
+    res.status(400).json({
       success: false,
       error: "UPLOAD_ERROR",
       message: err.message,

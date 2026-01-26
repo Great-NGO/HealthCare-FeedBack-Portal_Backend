@@ -18,9 +18,9 @@ export const surveyController = {
     next: NextFunction
   ): Promise<void> {
     try {
-      const data = matchedData(req);
+      const data = matchedData(req) as { token: string; [key: string]: unknown };
 
-      const survey = await surveyService.submit(data);
+      const survey = await surveyService.submit(data as any);
 
       res.status(201).json(
         createSuccessResponse(survey, "Survey submitted successfully", req.originalUrl, 201)
@@ -63,8 +63,9 @@ export const surveyController = {
   ): Promise<void> {
     try {
       const { feedbackId } = req.params;
+      const fbId = typeof feedbackId === 'string' ? feedbackId : Array.isArray(feedbackId) ? feedbackId[0] : '';
 
-      const survey = await surveyService.getByFeedbackId(feedbackId);
+      const survey = await surveyService.getByFeedbackId(fbId);
 
       if (!survey) {
         res.status(200).json(

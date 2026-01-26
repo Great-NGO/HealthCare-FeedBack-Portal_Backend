@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { healthFacilityService } from "../services/healthFacility.service.js";
-import type { ApiResponse, ErrorResponse } from "../types/responses.js";
+import type { ApiResponse } from "../types/responses.js";
 
 /**
  * Health Facility Controller
@@ -25,7 +25,7 @@ export async function getStates(
       data: states,
       statusCode: 200,
       path: req.originalUrl,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     next(error);
@@ -43,7 +43,8 @@ export async function getLGAsForState(
 ): Promise<void> {
   try {
     const { state } = req.params;
-    const lgas = await healthFacilityService.getLGAsForState(state);
+    const stateParam = typeof state === 'string' ? state : Array.isArray(state) ? state[0] : '';
+    const lgas = await healthFacilityService.getLGAsForState(stateParam);
 
     res.status(200).json({
       success: true,
@@ -51,7 +52,7 @@ export async function getLGAsForState(
       data: lgas,
       statusCode: 200,
       path: req.originalUrl,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     next(error);
@@ -69,7 +70,9 @@ export async function getFacilitiesForLGA(
 ): Promise<void> {
   try {
     const { state, lga } = req.params;
-    const facilities = await healthFacilityService.getFacilitiesForLGA(state, lga);
+    const stateParam = typeof state === 'string' ? state : Array.isArray(state) ? state[0] : '';
+    const lgaParam = typeof lga === 'string' ? lga : Array.isArray(lga) ? lga[0] : '';
+    const facilities = await healthFacilityService.getFacilitiesForLGA(stateParam, lgaParam);
 
     res.status(200).json({
       success: true,
@@ -77,7 +80,7 @@ export async function getFacilitiesForLGA(
       data: facilities,
       statusCode: 200,
       path: req.originalUrl,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     next(error);
@@ -107,7 +110,7 @@ export async function searchFacilities(
         data: [],
         statusCode: 400,
         path: req.originalUrl,
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       });
       return;
     }
@@ -125,7 +128,7 @@ export async function searchFacilities(
       data: facilities,
       statusCode: 200,
       path: req.originalUrl,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     next(error);
@@ -150,7 +153,7 @@ export async function getStats(
       data: stats,
       statusCode: 200,
       path: req.originalUrl,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     next(error);
