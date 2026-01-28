@@ -481,7 +481,7 @@ export const feedbackService = {
       byGender[key] = row._count.id;
     }
 
-    // Get top 3 issue classifications
+    // Get issue classifications sorted by frequency (frontends can choose how many to display)
     const byIssueClassification: Array<{ classification: string; count: number }> = [];
     for (const row of byIssueClassificationRows) {
       if (row.issue_classification) {
@@ -491,10 +491,8 @@ export const feedbackService = {
         });
       }
     }
-    // Sort by count descending and take top 3
-    const top3Themes = byIssueClassification
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 3);
+    // Sort by count descending; caller decides how many to use (top 3, 5, 10, etc.)
+    const top3Themes = byIssueClassification.sort((a, b) => b.count - a.count);
 
     return {
       total,
