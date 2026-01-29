@@ -169,6 +169,24 @@ export const createFeedbackValidators = [
     .trim()
     .withMessage("Department must be a string"),
 
+  body("location")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .withMessage("Location must be a string"),
+
+  body("staff_involved")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .withMessage("Staff involved must be a string"),
+
+  body("witnesses")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .withMessage("Witnesses must be a string"),
+
   body("severity")
     .optional({ nullable: true })
     // Frontend uses a 0–4 scale (0 = No Impact, 4 = Severe)
