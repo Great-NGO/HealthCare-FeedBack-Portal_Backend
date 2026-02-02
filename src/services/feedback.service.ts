@@ -428,7 +428,7 @@ export const feedbackService = {
       byAgeRows,
       byGenderRows,
       byIssueClassificationRows,
-      byComplimentDepartmentRows,
+      byComplimentFacilityRows,
     ] =
       await Promise.all([
         prisma.feedbackSubmission.count({ where }),
@@ -467,11 +467,11 @@ export const feedbackService = {
           _count: { id: true },
         }),
         prisma.feedbackSubmission.groupBy({
-          by: ["department"],
+          by: ["facility_name"],
           where: {
             ...where,
             feedback_type: "compliment",
-            department: { not: null },
+            facility_name: { not: null },
           },
           _count: { id: true },
         }),
@@ -512,16 +512,16 @@ export const feedbackService = {
     // Sort by count descending; caller decides how many to use (top 3, 5, 10, etc.)
     const top3Themes = byIssueClassification.sort((a, b) => b.count - a.count);
 
-    const byComplimentDepartment: Array<{ classification: string; count: number }> = [];
-    for (const row of byComplimentDepartmentRows) {
-      if (row.department) {
-        byComplimentDepartment.push({
-          classification: row.department,
+    const byComplimentFacility: Array<{ classification: string; count: number }> = [];
+    for (const row of byComplimentFacilityRows) {
+      if (row.facility_name) {
+        byComplimentFacility.push({
+          classification: row.facility_name,
           count: row._count.id,
         });
       }
     }
-    const topComplimentThemes = byComplimentDepartment.sort((a, b) => b.count - a.count);
+    const topComplimentThemes = byComplimentFacility.sort((a, b) => b.count - a.count);
 
     return {
       total,
