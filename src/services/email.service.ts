@@ -17,22 +17,35 @@ const EMAIL_FROM = "MyVoiceMyHealth <no-reply@healthcare-feedback.i4nnova.com>";
 const getAppUrl = () => process.env.APP_URL || "http://localhost:8080";
 
 /**
- * Brand footer for emails
+ * Hosted logo URL used in all emails
+ */
+const getLogoUrl = () => `${getAppUrl()}/mvmh-removebg-preview.png`;
+
+/** Logo HTML for email headers (logo image only) */
+const getEmailHeaderLogo = (maxHeightPx = 48) =>
+  `<img src="${getLogoUrl()}" alt="MyVoiceMyHealth" style="max-height: ${maxHeightPx}px; width: auto; display: block; margin: 0 auto 8px auto;" />`;
+
+/** Two-tone brand text for light backgrounds (MyVoice #505050, MyHealth #1E6B4A) */
+const emailBrandText = '<span style="color: #505050;">MyVoice</span><span style="color: #1E6B4A;">MyHealth</span>';
+
+/**
+ * Brand footer for emails – uses logo image and brand colors
  */
 const brandFooter = `
-  <div style="margin-top: 30px; padding: 20px; background-color: #f8fafc; border-top: 3px solid #2563eb; text-align: center;">
+  <div style="margin-top: 30px; padding: 20px; background-color: #f8fafc; border-top: 3px solid #1E6B4A; text-align: center;">
     <div style="margin-bottom: 15px;">
-      <span style="font-size: 24px; font-weight: bold; color: #2563eb;">MyVoiceMyHealth</span>
+      ${getEmailHeaderLogo(40)}
+      <div style="font-size: 20px; font-weight: bold; font-family: Arial, sans-serif;">${emailBrandText}</div>
     </div>
     <p style="color: #475569; font-size: 14px; margin: 0 0 10px 0;">
       Your Voice Matters in Healthcare
     </p>
     <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-      This is an automated message from MyVoiceMyHealth. Please do not reply directly to this email.
+      This is an automated message from ${emailBrandText}. Please do not reply directly to this email.
     </p>
     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
       <p style="color: #94a3b8; font-size: 11px; margin: 0;">
-        © ${new Date().getFullYear()} MyVoiceMyHealth. All rights reserved.
+        © ${new Date().getFullYear()} ${emailBrandText}. All rights reserved.
       </p>
     </div>
   </div>
@@ -64,7 +77,8 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
+              ${getEmailHeaderLogo(48)}
+              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
             </div>
             <h1 style="color: #1e40af;">Welcome to the Admin Team!</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
@@ -127,7 +141,8 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
+              ${getEmailHeaderLogo(48)}
+              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
             </div>
             <h1 style="color: #1e40af;">Password Reset Request</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
@@ -176,7 +191,8 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
+              ${getEmailHeaderLogo(48)}
+              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
             </div>
             <h1 style="color: #1e40af;">Thank You for Your Feedback</h1>
             <p>We have successfully received your feedback submission.</p>
@@ -220,7 +236,8 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
+              ${getEmailHeaderLogo(48)}
+              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
             </div>
             <h1 style="color: #1e40af;">We Value Your Opinion</h1>
             <p>Thank you for submitting your feedback (Reference: <strong>${referenceId}</strong>).</p>
@@ -291,7 +308,8 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
+              ${getEmailHeaderLogo(48)}
+              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
             </div>
             <h1 style="color: #1e40af;">New Feedback Submission</h1>
             <p>A new ${feedbackTypeLabel.toLowerCase()} has been submitted and requires your attention.</p>
@@ -338,7 +356,8 @@ export const emailService = {
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #22c55e; margin-bottom: 30px;">
-              <span style="font-size: 28px; font-weight: bold; color: white;">MyVoiceMyHealth</span>
+              ${getEmailHeaderLogo(48)}
+              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
             </div>
             <h1 style="color: #16a34a;">Your Case Has Been Resolved</h1>
             <p>Dear Respondent,</p>
@@ -352,10 +371,10 @@ export const emailService = {
             <div style="text-align: center; margin: 30px 0;">
               <a href="${appUrl}" 
                  style="background-color: #22c55e; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-                Visit MyVoiceMyHealth
+                Visit ${emailBrandText}
               </a>
             </div>
-            <p>Best regards,<br>The MyVoiceMyHealth Team</p>
+            <p>Best regards,<br>The ${emailBrandText} Team</p>
             ${brandFooter}
           </div>
         `,
