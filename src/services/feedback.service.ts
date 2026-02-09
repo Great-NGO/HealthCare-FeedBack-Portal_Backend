@@ -446,6 +446,9 @@ export const feedbackService = {
       byDepartmentRows,
       bySeverityRows,
       submissionsByDayRows,
+      byIssueAndStateRows,
+      highSeverityByFacilityTypeRows,
+      backlogByDepartmentRows,
     ] =
       await Promise.all([
         prisma.feedbackSubmission.count({ where }),
@@ -527,6 +530,34 @@ export const feedbackService = {
           GROUP BY date(created_at)
           ORDER BY d
         `,
+        prisma.feedbackSubmission.groupBy({
+          by: ["issue_classification", "facility_state"],
+          where: {
+            ...where,
+            issue_classification: { not: null },
+            facility_state: { not: null },
+          },
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["facility_type"],
+          where: {
+            ...where,
+            facility_type: { not: null },
+            feedback_type: { in: ["complaint", "safety_incident"] },
+            severity: { gte: 4 },
+          },
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["department"],
+          where: {
+            ...where,
+            department: { not: null },
+            status: { in: ["new", "in_review"] },
+          },
+          _count: { id: true },
+        }),
       ]);
 
     const byType: Record<string, number> = {};
@@ -611,6 +642,35 @@ export const feedbackService = {
       submissionsByDay[dateKey] = Number(row.c);
     }
 
+    const issuesByStateAndTheme: Array<{
+      classification: string;
+      state: string;
+      count: number;
+    }> = [];
+    for (const row of byIssueAndStateRows) {
+      if (row.issue_classification && row.facility_state) {
+        issuesByStateAndTheme.push({
+          classification: row.issue_classification,
+          state: row.facility_state,
+          count: row._count.id,
+        });
+      }
+    }
+
+    const highSeverityByFacilityType: Record<string, number> = {};
+    for (const row of highSeverityByFacilityTypeRows) {
+      if (row.facility_type) {
+        highSeverityByFacilityType[row.facility_type] = row._count.id;
+      }
+    }
+
+    const backlogByDepartment: Record<string, number> = {};
+    for (const row of backlogByDepartmentRows) {
+      if (row.department) {
+        backlogByDepartment[row.department] = row._count.id;
+      }
+    }
+
     return {
       total,
       byType,
@@ -626,6 +686,9 @@ export const feedbackService = {
       byDepartment,
       bySeverity,
       submissionsByDay,
+      issuesByStateAndTheme,
+      highSeverityByFacilityType,
+      backlogByDepartment,
     };
   },
 
