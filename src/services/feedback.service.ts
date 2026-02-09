@@ -420,6 +420,17 @@ export const feedbackService = {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
 
+    const dateFromForSeries = dateFrom
+      ? new Date(dateFrom)
+      : (() => {
+          const d = new Date();
+          d.setDate(d.getDate() - 30);
+          return d;
+        })();
+    const dateToForSeries = dateTo
+      ? new Date(`${dateTo}T23:59:59`)
+      : new Date();
+
     const [
       total,
       newThisWeek,
@@ -429,6 +440,12 @@ export const feedbackService = {
       byGenderRows,
       byIssueClassificationRows,
       byComplimentFacilityRows,
+      totalWithVoiceNote,
+      byFacilityTypeRows,
+      byStateRows,
+      byDepartmentRows,
+      bySeverityRows,
+      submissionsByDayRows,
     ] =
       await Promise.all([
         prisma.feedbackSubmission.count({ where }),
@@ -475,6 +492,41 @@ export const feedbackService = {
           },
           _count: { id: true },
         }),
+        prisma.feedbackSubmission.count({
+          where: { ...where, voice_message_url: { not: null } },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["facility_type"],
+          where: { ...where, facility_type: { not: null } },
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["facility_state"],
+          where: { ...where, facility_state: { not: null } },
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["department"],
+          where: { ...where, department: { not: null } },
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["severity"],
+          where: {
+            ...where,
+            feedback_type: { in: ["complaint", "safety_incident"] },
+            severity: { not: null },
+          },
+          _count: { id: true },
+        }),
+        prisma.$queryRaw<{ d: Date; c: bigint }[]>`
+          SELECT date(created_at) as d, count(*)::int as c
+          FROM feedback_submissions
+          WHERE created_at >= ${dateFromForSeries}
+            AND created_at <= ${dateToForSeries}
+          GROUP BY date(created_at)
+          ORDER BY d
+        `,
       ]);
 
     const byType: Record<string, number> = {};
@@ -523,6 +575,42 @@ export const feedbackService = {
     }
     const topComplimentThemes = byComplimentFacility.sort((a, b) => b.count - a.count);
 
+    const byFacilityType: Record<string, number> = {};
+    for (const row of byFacilityTypeRows) {
+      if (row.facility_type) {
+        byFacilityType[row.facility_type] = row._count.id;
+      }
+    }
+
+    const byState: Record<string, number> = {};
+    for (const row of byStateRows) {
+      if (row.facility_state) {
+        byState[row.facility_state] = row._count.id;
+      }
+    }
+
+    const byDepartment: Record<string, number> = {};
+    for (const row of byDepartmentRows) {
+      if (row.department) {
+        byDepartment[row.department] = row._count.id;
+      }
+    }
+
+    const bySeverity: Record<string, number> = {};
+    for (const row of bySeverityRows) {
+      const key = row.severity != null ? String(row.severity) : "Unknown";
+      bySeverity[key] = row._count.id;
+    }
+
+    const submissionsByDay: Record<string, number> = {};
+    for (const row of submissionsByDayRows) {
+      const dateKey =
+        row.d instanceof Date
+          ? row.d.toISOString().slice(0, 10)
+          : String(row.d).slice(0, 10);
+      submissionsByDay[dateKey] = Number(row.c);
+    }
+
     return {
       total,
       byType,
@@ -532,6 +620,12 @@ export const feedbackService = {
       newThisWeek,
       top3Themes,
       topComplimentThemes,
+      totalWithVoiceNote: totalWithVoiceNote ?? 0,
+      byFacilityType,
+      byState,
+      byDepartment,
+      bySeverity,
+      submissionsByDay,
     };
   },
 
