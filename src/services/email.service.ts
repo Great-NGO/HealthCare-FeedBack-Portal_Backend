@@ -19,7 +19,7 @@ const getAppUrl = () => process.env.APP_URL || "http://localhost:8080";
 /**
  * Hosted logo URL used in all emails
  */
-const getLogoUrl = () => `${getAppUrl()}/mvmh-removebg-preview.png`;
+const getLogoUrl = () => `${getAppUrl()}/mvmh-logo.svg`;
 
 /** Logo HTML for email headers (logo image only) */
 const getEmailHeaderLogo = (maxHeightPx = 48) =>
