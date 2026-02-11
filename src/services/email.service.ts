@@ -13,8 +13,10 @@ const EMAIL_FROM = "MyVoiceMyHealth <no-reply@healthcare-feedback.i4nnova.com>";
 
 /**
  * Default app URL for email links
+ * Uses explicit production URL, falls back to env/local for non-prod.
  */
-const getAppUrl = () => process.env.APP_URL || "http://localhost:8080";
+const getAppUrl = () =>
+  process.env.APP_URL || "https://myvoicemyhealth.vercel.app" || "http://localhost:8080";
 
 /**
  * Hosted logo URL used in all emails
