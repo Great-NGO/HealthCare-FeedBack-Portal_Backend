@@ -28,7 +28,9 @@ interface CreateFeedbackDto {
   reporter_email?: string | null;
   reporter_phone?: string | null;
   reporter_type?: string | null;
+  reporting_for_self?: boolean | null;
   reporter_relationship?: string | null;
+  reporter_organization?: string | null;
   reporter_gender?: string | null;
   reporter_age_range?: string | null;
   reporter_disability_status?: string | null;

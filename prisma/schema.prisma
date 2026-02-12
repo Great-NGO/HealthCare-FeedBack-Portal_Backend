@@ -80,7 +80,9 @@ model FeedbackSubmission {
   reporter_email            String?
   reporter_phone            String?
   reporter_type             String?
+  reporting_for_self        Boolean?
   reporter_relationship     String?
+  reporter_organization     String?
   reporter_gender           String?
   reporter_age_range        String?
   reporter_disability_status String?

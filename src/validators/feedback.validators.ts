@@ -29,12 +29,24 @@ export const createFeedbackValidators = [
     .isLength({ min: 2, max: 255 })
     .withMessage("Reporter type must be between 2 and 255 characters"),
 
+  body("reporting_for_self")
+    .optional({ nullable: true })
+    .isBoolean()
+    .withMessage("reporting_for_self must be a boolean"),
+
   body("reporter_relationship")
     .optional({ nullable: true })
     .isString()
     .trim()
     .isLength({ min: 2, max: 255 })
     .withMessage("Reporter relationship must be between 2 and 255 characters"),
+
+  body("reporter_organization")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("Reporter organization must be between 1 and 255 characters"),
 
   body("reporter_gender")
     .optional({ nullable: true })
@@ -228,8 +240,8 @@ export const createFeedbackValidators = [
     .optional({ nullable: true })
     .isString()
     .trim()
-    .isIn(["english", "igbo", "yoruba"])
-    .withMessage("voice_language must be one of: english, igbo, yoruba"),
+    .isIn(["english", "igbo", "yoruba", "hausa"])
+    .withMessage("voice_language must be one of: english, igbo, yoruba, hausa"),
 
   body("additional_comments")
     .optional({ nullable: true })
