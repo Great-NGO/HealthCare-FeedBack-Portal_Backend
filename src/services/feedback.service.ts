@@ -492,11 +492,11 @@ export const feedbackService = {
           _count: { id: true },
         }),
         prisma.feedbackSubmission.groupBy({
-          by: ["facility_name"],
+          by: ["issue_classification"],
           where: {
             ...where,
             feedback_type: "compliment",
-            facility_name: { not: null },
+            issue_classification: { not: null },
           },
           _count: { id: true },
         }),
@@ -600,16 +600,16 @@ export const feedbackService = {
     // Sort by count descending; caller decides how many to use (top 3, 5, 10, etc.)
     const top3Themes = byIssueClassification.sort((a, b) => b.count - a.count);
 
-    const byComplimentFacility: Array<{ classification: string; count: number }> = [];
+    const byComplimentCategory: Array<{ classification: string; count: number }> = [];
     for (const row of byComplimentFacilityRows) {
-      if (row.facility_name) {
-        byComplimentFacility.push({
-          classification: row.facility_name,
+      if (row.issue_classification) {
+        byComplimentCategory.push({
+          classification: row.issue_classification,
           count: row._count.id,
         });
       }
     }
-    const topComplimentThemes = byComplimentFacility.sort((a, b) => b.count - a.count);
+    const topComplimentThemes = byComplimentCategory.sort((a, b) => b.count - a.count);
 
     const byFacilityType: Record<string, number> = {};
     for (const row of byFacilityTypeRows) {
