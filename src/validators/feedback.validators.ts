@@ -131,6 +131,25 @@ export const createFeedbackValidators = [
     .trim()
     .withMessage("Reporter phone must be a string"),
 
+  body("patient_name")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 2, max: 255 })
+    .withMessage("Patient name must be between 2 and 255 characters"),
+
+  body("patient_email")
+    .optional({ nullable: true })
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("Patient email must be a valid email address"),
+
+  body("patient_phone")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .withMessage("Patient phone must be a string"),
+
   body("feedback_type")
     .isIn(Object.values(FeedbackType))
     .withMessage(`Feedback type must be one of: ${Object.values(FeedbackType).join(", ")}`),

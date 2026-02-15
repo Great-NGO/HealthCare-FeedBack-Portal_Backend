@@ -42,6 +42,9 @@ interface CreateFeedbackDto {
   reporter_insurance_coverage?: string | null;
   reporter_healthcare_frequency?: string | null;
   reporter_sexuality?: string | null;
+  patient_name?: string | null;
+  patient_email?: string | null;
+  patient_phone?: string | null;
   feedback_type: FeedbackType;
   facility_type?: string | null;
   facility_state?: string | null;

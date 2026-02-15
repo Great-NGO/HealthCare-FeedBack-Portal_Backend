@@ -9,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 /**
  * Email sender address
  */
-const EMAIL_FROM = "MyVoiceMyHealth <no-reply@healthcare-feedback.i4nnova.com>";
+const EMAIL_FROM = "MYvoiceMYhealth <no-reply@healthcare-feedback.i4nnova.com>";
 
 /**
  * Default app URL for email links
@@ -26,7 +26,7 @@ const getLogoUrl = () => `${getAppUrl()}/mvmh-logo-email.png`;
 
 /** Logo HTML for email headers (logo image only) */
 const getEmailHeaderLogo = (maxHeightPx = 48) =>
-  `<img src="${getLogoUrl()}" alt="MyVoiceMyHealth" style="max-height: ${maxHeightPx}px; width: auto; display: block; margin: 0 auto 8px auto;" />`;
+  `<img src="${getLogoUrl()}" alt="MYvoiceMYhealth" style="max-height: ${maxHeightPx}px; width: auto; display: block; margin: 0 auto 8px auto;" />`;
 
 /** Two-tone brand text for light backgrounds (MyVoice #505050, MyHealth #1E6B4A) */
 const emailBrandText = '<span style="color: #505050;">MyVoice</span><span style="color: #1E6B4A;">MyHealth</span>';
@@ -76,7 +76,7 @@ export const emailService = {
       await resend.emails.send({
         from: EMAIL_FROM,
         to: [email],
-        subject: "You've Been Added as an Admin - MyVoiceMyHealth",
+        subject: "You've Been Added as an Admin - MYvoiceMYhealth",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
@@ -85,7 +85,7 @@ export const emailService = {
             </div>
             <h1 style="color: #1e40af;">Welcome to the Admin Team!</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
-            <p>You have been added as an administrator to the MyVoiceMyHealth platform.</p>
+            <p>You have been added as an administrator to the MYvoiceMYhealth platform.</p>
             
             <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
               <h3 style="margin: 0 0 15px 0; color: #1e40af;">Your Login Credentials</h3>
@@ -140,7 +140,7 @@ export const emailService = {
       await resend.emails.send({
         from: EMAIL_FROM,
         to: [email],
-        subject: "Password Reset - MyVoiceMyHealth",
+        subject: "Password Reset - MYvoiceMYhealth",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
