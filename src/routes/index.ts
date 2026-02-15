@@ -7,6 +7,7 @@ import healthFacilityRoutes from "./healthFacility.routes.js";
 import pendingEntryRoutes from "./pendingEntry.routes.js";
 import surveyRoutes from "./survey.routes.js";
 import uploadRoutes from "./upload.routes.js";
+import ngoRoutes from "./ngo.routes.js";
 
 const router = Router();
 
@@ -14,6 +15,7 @@ const router = Router();
  * API v1 Routes
  */
 router.use("/auth", authRoutes);
+router.use("/ngos", ngoRoutes);
 router.use("/feedback", feedbackRoutes);
 router.use("/admins", adminRoutes);
 router.use("/facilities", facilityRoutes);

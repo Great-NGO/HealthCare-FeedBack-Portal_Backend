@@ -233,6 +233,17 @@ model UserRole {
   @@index([user_id])
 }
 
+/// Recognized NGOs for reporter organization dropdown (seeded from xlsx)
+model RecognizedNgo {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  @@map("recognized_ngos")
+  @@index([name])
+}
+
 // ==================== HEALTH FACILITIES (GRID3 Data) ====================
 
 enum FacilityOwnershipType {
