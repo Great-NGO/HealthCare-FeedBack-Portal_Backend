@@ -21,8 +21,8 @@ const getAppUrl = () =>
 /**
  * Hosted logo URL used in all emails
  */
-// Use a PNG here because many email clients don't render SVG logos reliably
-const getLogoUrl = () => `${getAppUrl()}/mvmh-logo-email.png`;
+// Use the shared frontend public logo so emails and app stay consistent
+const getLogoUrl = () => `${getAppUrl()}/logo.png`;
 
 /** Logo HTML for email headers (logo image only) */
 const getEmailHeaderLogo = (maxHeightPx = 48) =>
