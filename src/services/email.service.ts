@@ -37,7 +37,6 @@ const emailBrandText = '<span style="color: #505050;">MyVoice</span><span style=
 const brandFooter = `
   <div style="margin-top: 30px; padding: 20px; background-color: #f8fafc; border-top: 3px solid #1E6B4A; text-align: center;">
     <div style="margin-bottom: 15px;">
-      ${getEmailHeaderLogo(40)}
       <div style="font-size: 20px; font-weight: bold; font-family: Arial, sans-serif;">${emailBrandText}</div>
     </div>
     <p style="color: #475569; font-size: 14px; margin: 0 0 10px 0;">
@@ -310,11 +309,10 @@ export const emailService = {
         subject: `New ${feedbackTypeLabel} Submitted - Reference: ${referenceId}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(48)}
-              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
+            <div style="text-align: center; padding: 16px 0; background-color: #f9fafb; border-bottom: 1px solid #e5e7eb; margin-bottom: 24px;">
+              ${getEmailHeaderLogo(32)}
             </div>
-            <h1 style="color: #1e40af;">New Feedback Submission</h1>
+            <h1 style="color: #1e40af; text-align: center; margin: 0 0 16px 0;">New Feedback Submission</h1>
             <p>A new ${feedbackTypeLabel.toLowerCase()} has been submitted and requires your attention.</p>
             <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
               <p style="margin: 0 0 8px 0;"><strong>Reference Number:</strong> ${referenceId}</p>
