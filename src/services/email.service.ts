@@ -9,7 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 /**
  * Email sender address
  */
-const EMAIL_FROM = "MYvoiceMYhealth <no-reply@healthcare-feedback.i4nnova.com>";
+const EMAIL_FROM = "MyVoiceMyHealth <no-reply@healthcare-feedback.i4nnova.com>";
 
 /**
  * Default app URL for email links
@@ -30,10 +30,10 @@ const BRAND_PRIMARY_SOFT = "#DCFCE7"; // soft green background
 
 /** Logo HTML for email headers (logo image only) */
 const getEmailHeaderLogo = (heightPx = 56) =>
-  `<img src="${getLogoUrl()}" alt="MYvoiceMYhealth" style="height: ${heightPx}px; max-width: 100%; width: auto; display: block; margin: 0 auto;" />`;
+  `<img src="${getLogoUrl()}" alt="MyVoiceMyHealth" style="height: ${heightPx}px; max-width: 100%; width: auto; display: block; margin: 0 auto;" />`;
 
-/** Two-tone brand text for light backgrounds (MyVoice #505050, MyHealth #1E6B4A) */
-const emailBrandText = '<span style="color: #505050;">MyVoice</span><span style="color: #1E6B4A;">MyHealth</span>';
+/** Brand text for emails (single word mark) */
+const emailBrandText = '<span style="color: #1E6B4A;">MyVoiceMyHealth</span>';
 
 /**
  * Brand footer for emails – uses logo image and brand colors
@@ -79,7 +79,7 @@ export const emailService = {
       await resend.emails.send({
         from: EMAIL_FROM,
         to: [email],
-        subject: "You've Been Added as an Admin - MYvoiceMYhealth",
+        subject: "You've Been Added as an Admin - MyVoiceMyHealth",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 24px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
@@ -87,7 +87,7 @@ export const emailService = {
             </div>
             <h1 style="color: ${BRAND_PRIMARY};">Welcome to the Admin Team!</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
-            <p>You have been added as an administrator to the MYvoiceMYhealth platform.</p>
+            <p>You have been added as an administrator to the MyVoiceMyHealth platform.</p>
             
             <div style="background-color: ${BRAND_PRIMARY_SOFT}; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${BRAND_PRIMARY};">
               <h3 style="margin: 0 0 15px 0; color: ${BRAND_PRIMARY};">Your Login Credentials</h3>
@@ -142,7 +142,7 @@ export const emailService = {
       await resend.emails.send({
         from: EMAIL_FROM,
         to: [email],
-        subject: "Password Reset - MYvoiceMYhealth",
+        subject: "Password Reset - MyVoiceMyHealth",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; padding: 24px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">

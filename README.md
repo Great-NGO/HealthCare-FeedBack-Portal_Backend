@@ -1,1 +1,1 @@
-Backend Repository for the MYvoiceMYhealth HealthCare Feedback Platform
+Backend Repository for the MyVoiceMyHealth HealthCare Feedback Platform
