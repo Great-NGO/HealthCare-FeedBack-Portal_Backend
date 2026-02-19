@@ -32,6 +32,12 @@ export const config = {
 
   /** JWT expiration */
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
+
+  /** AWS Development URL */
+  awsDevUrl: process.env.AWS_DEV_URL || "",
+
+  /** AWS Production URL */
+  awsProdUrl: process.env.AWS_PROD_URL || "",
 } as const;
 
 /**
@@ -39,7 +45,7 @@ export const config = {
  * @throws Error if required variables are missing
  */
 export function validateEnv(): void {
-  const required = ["SUPABASE_URL", "SUPABASE_ANON_KEY"];
+  const required = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "AWS_DEV_URL"];
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
