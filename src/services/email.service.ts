@@ -24,9 +24,13 @@ const getAppUrl = () =>
 // Use the shared frontend public logo so emails and app stay consistent
 const getLogoUrl = () => `${getAppUrl()}/logo.png`;
 
+/** Brand colors for email templates (aligned with app) */
+const BRAND_PRIMARY = "#1E6B4A"; // primary green
+const BRAND_PRIMARY_SOFT = "#DCFCE7"; // soft green background
+
 /** Logo HTML for email headers (logo image only) */
-const getEmailHeaderLogo = (maxHeightPx = 48) =>
-  `<img src="${getLogoUrl()}" alt="MYvoiceMYhealth" style="max-height: ${maxHeightPx}px; width: auto; display: block; margin: 0 auto 8px auto;" />`;
+const getEmailHeaderLogo = (heightPx = 40) =>
+  `<img src="${getLogoUrl()}" alt="MYvoiceMYhealth" style="height: ${heightPx}px; max-width: 100%; width: auto; display: block; margin: 0 auto;" />`;
 
 /** Two-tone brand text for light backgrounds (MyVoice #505050, MyHealth #1E6B4A) */
 const emailBrandText = '<span style="color: #505050;">MyVoice</span><span style="color: #1E6B4A;">MyHealth</span>';
@@ -78,16 +82,15 @@ export const emailService = {
         subject: "You've Been Added as an Admin - MYvoiceMYhealth",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(48)}
-              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
+            <div style="text-align: center; padding: 20px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
+              ${getEmailHeaderLogo(44)}
             </div>
-            <h1 style="color: #1e40af;">Welcome to the Admin Team!</h1>
+            <h1 style="color: ${BRAND_PRIMARY};">Welcome to the Admin Team!</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
             <p>You have been added as an administrator to the MYvoiceMYhealth platform.</p>
             
-            <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
-              <h3 style="margin: 0 0 15px 0; color: #1e40af;">Your Login Credentials</h3>
+            <div style="background-color: ${BRAND_PRIMARY_SOFT}; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${BRAND_PRIMARY};">
+              <h3 style="margin: 0 0 15px 0; color: ${BRAND_PRIMARY};">Your Login Credentials</h3>
               <p style="margin: 0 0 8px 0;"><strong>Email:</strong> ${email}</p>
               <p style="margin: 0 0 8px 0;"><strong>Password:</strong> <code style="background: #dbeafe; padding: 4px 8px; border-radius: 4px; font-size: 16px;">${password}</code></p>
               <p style="margin: 15px 0 0 0;"><strong>Role:</strong> ${roleDisplay}</p>
@@ -103,7 +106,7 @@ export const emailService = {
             
             <div style="text-align: center; margin: 30px 0;">
               <a href="${loginUrl}" 
-                 style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                 style="background-color: ${BRAND_PRIMARY}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
                 Access Admin Dashboard
               </a>
             </div>
@@ -142,17 +145,16 @@ export const emailService = {
         subject: "Password Reset - MYvoiceMYhealth",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(48)}
-              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
+            <div style="text-align: center; padding: 20px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
+              ${getEmailHeaderLogo(44)}
             </div>
-            <h1 style="color: #1e40af;">Password Reset Request</h1>
+            <h1 style="color: ${BRAND_PRIMARY};">Password Reset Request</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
             <p>We received a request to reset your password. Click the button below to set a new password:</p>
             
             <div style="text-align: center; margin: 30px 0;">
               <a href="${resetUrl}?token=${resetToken}" 
-                 style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                 style="background-color: ${BRAND_PRIMARY}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
                 Reset Password
               </a>
             </div>
@@ -192,13 +194,12 @@ export const emailService = {
         subject: `Feedback Received - Reference: ${referenceId}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(48)}
-              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
+            <div style="text-align: center; padding: 20px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
+              ${getEmailHeaderLogo(44)}
             </div>
-            <h1 style="color: #1e40af;">Thank You for Your Feedback</h1>
+            <h1 style="color: ${BRAND_PRIMARY};">Thank You for Your Feedback</h1>
             <p>We have successfully received your feedback submission.</p>
-            <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+            <div style="background-color: ${BRAND_PRIMARY_SOFT}; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${BRAND_PRIMARY};">
               <p style="margin: 0;"><strong>Reference Number:</strong> ${referenceId}</p>
             </div>
             <p>Please keep this reference number for your records. You can use it to track the status of your submission.</p>
@@ -237,26 +238,25 @@ export const emailService = {
         subject: `Follow Up on Feedback (Reference: ${referenceId})`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 20px 0; background-color: #2563eb; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(48)}
-              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
+            <div style="text-align: center; padding: 20px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
+              ${getEmailHeaderLogo(44)}
             </div>
-            <h1 style="color: #1e40af;">We Value Your Opinion</h1>
+            <h1 style="color: ${BRAND_PRIMARY};">We Value Your Opinion</h1>
             <p>Thank you for submitting your feedback (Reference: <strong>${referenceId}</strong>).</p>
             <p>To help us continuously improve our services, we'd appreciate if you could take a moment to complete a brief survey about your experience.</p>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${surveyLink}" 
-                 style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                 style="background-color: ${BRAND_PRIMARY}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
                 Complete Survey
               </a>
             </div>
-            <p style="color: #6b7280; font-size: 14px;">
+            <p style="color: #e5f6ed; font-size: 14px;">
               This survey should only take 2-3 minutes to complete.
             </p>
             <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
             <p style="color: #6b7280; font-size: 14px;">
               If the button above doesn't work, copy and paste this link into your browser:<br>
-              <a href="${surveyLink}" style="color: #2563eb;">${surveyLink}</a>
+              <a href="${surveyLink}" style="color: ${BRAND_PRIMARY};">${surveyLink}</a>
             </p>
             ${brandFooter}
           </div>
@@ -312,15 +312,15 @@ export const emailService = {
             <div style="text-align: center; padding: 16px 0; background-color: #f9fafb; border-bottom: 1px solid #e5e7eb; margin-bottom: 24px;">
               ${getEmailHeaderLogo(32)}
             </div>
-            <h1 style="color: #1e40af; text-align: center; margin: 0 0 16px 0;">New Feedback Submission</h1>
+            <h1 style="color: ${BRAND_PRIMARY}; text-align: center; margin: 0 0 16px 0;">New Feedback Submission</h1>
             <p>A new ${feedbackTypeLabel.toLowerCase()} has been submitted and requires your attention.</p>
-            <div style="background-color: #eff6ff; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
+            <div style="background-color: ${BRAND_PRIMARY_SOFT}; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${BRAND_PRIMARY};">
               <p style="margin: 0 0 8px 0;"><strong>Reference Number:</strong> ${referenceId}</p>
               <p style="margin: 0;"><strong>Type:</strong> ${feedbackTypeLabel}</p>
             </div>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${appUrl}/admin/feedback/${feedbackId}" 
-                 style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                 style="background-color: ${BRAND_PRIMARY}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
                 View in Admin Dashboard
               </a>
             </div>
@@ -356,14 +356,13 @@ export const emailService = {
         subject: `Case Resolved - Reference: ${referenceId}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 20px 0; background-color: #22c55e; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(48)}
-              <span style="font-size: 24px; font-weight: bold; color: white;">MyVoice</span><span style="font-size: 24px; font-weight: bold; color: #C5E1AD;">MyHealth</span>
+            <div style="text-align: center; padding: 20px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
+              ${getEmailHeaderLogo(44)}
             </div>
-            <h1 style="color: #16a34a;">Your Case Has Been Resolved</h1>
+            <h1 style="color: ${BRAND_PRIMARY};">Your Case Has Been Resolved</h1>
             <p>Dear Respondent,</p>
             <p>We are pleased to inform you that your feedback submission has been reviewed and the case has been resolved.</p>
-            <div style="background-color: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #22c55e;">
+            <div style="background-color: ${BRAND_PRIMARY_SOFT}; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${BRAND_PRIMARY};">
               <p style="margin: 0 0 8px 0;"><strong>Reference Number:</strong> ${referenceId}</p>
               <p style="margin: 0;"><strong>Status:</strong> Closed</p>
             </div>
@@ -371,7 +370,7 @@ export const emailService = {
             <p>If you have any further concerns or would like to provide additional feedback, please don't hesitate to submit a new report through our portal.</p>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${appUrl}" 
-                 style="background-color: #22c55e; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+                 style="background-color: ${BRAND_PRIMARY}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
                 Visit ${emailBrandText}
               </a>
             </div>
