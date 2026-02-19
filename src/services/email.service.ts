@@ -29,7 +29,7 @@ const BRAND_PRIMARY = "#1E6B4A"; // primary green
 const BRAND_PRIMARY_SOFT = "#DCFCE7"; // soft green background
 
 /** Logo HTML for email headers (logo image only) */
-const getEmailHeaderLogo = (heightPx = 40) =>
+const getEmailHeaderLogo = (heightPx = 56) =>
   `<img src="${getLogoUrl()}" alt="MYvoiceMYhealth" style="height: ${heightPx}px; max-width: 100%; width: auto; display: block; margin: 0 auto;" />`;
 
 /** Two-tone brand text for light backgrounds (MyVoice #505050, MyHealth #1E6B4A) */
@@ -82,8 +82,8 @@ export const emailService = {
         subject: "You've Been Added as an Admin - MYvoiceMYhealth",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 20px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(44)}
+            <div style="text-align: center; padding: 24px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
+              ${getEmailHeaderLogo(64)}
             </div>
             <h1 style="color: ${BRAND_PRIMARY};">Welcome to the Admin Team!</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
@@ -145,8 +145,8 @@ export const emailService = {
         subject: "Password Reset - MYvoiceMYhealth",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 20px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(44)}
+            <div style="text-align: center; padding: 24px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
+              ${getEmailHeaderLogo(64)}
             </div>
             <h1 style="color: ${BRAND_PRIMARY};">Password Reset Request</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
@@ -194,8 +194,8 @@ export const emailService = {
         subject: `Feedback Received - Reference: ${referenceId}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 20px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(44)}
+            <div style="text-align: center; padding: 24px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
+              ${getEmailHeaderLogo(64)}
             </div>
             <h1 style="color: ${BRAND_PRIMARY};">Thank You for Your Feedback</h1>
             <p>We have successfully received your feedback submission.</p>
@@ -238,8 +238,8 @@ export const emailService = {
         subject: `Follow Up on Feedback (Reference: ${referenceId})`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 20px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(44)}
+            <div style="text-align: center; padding: 24px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
+              ${getEmailHeaderLogo(64)}
             </div>
             <h1 style="color: ${BRAND_PRIMARY};">We Value Your Opinion</h1>
             <p>Thank you for submitting your feedback (Reference: <strong>${referenceId}</strong>).</p>
