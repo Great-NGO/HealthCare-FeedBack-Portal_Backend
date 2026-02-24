@@ -33,11 +33,20 @@ export const config = {
   /** JWT expiration */
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
 
-  /** AWS Development URL */
-  awsDevUrl: process.env.AWS_DEV_URL || "",
+  /** AWS Development URL 1 */
+  awsDevUrl1: process.env.AWS_DEV_URL1 || "https://dev.d3isq8wedujlja.amplifyapp.com",
 
-  /** AWS Production URL */
-  awsProdUrl: process.env.AWS_PROD_URL || "",
+  /** AWS Development URL 2 */
+  awsDevUrl2: process.env.AWS_DEV_URL2 || "https://dev.myvoice-myhealth.com",
+  
+  /** AWS Production URL 1 */
+  awsProdUrl1: process.env.AWS_PROD_URL1 || "https://main.dswwmndorlwfp.amplifyapp.com",
+  
+  /** AWS Production URL 2 */
+  awsProdUrl2: process.env.AWS_PROD_URL2 || "https://myvoice-myhealth.com",
+  
+  /** AWS Production URL 3 */
+  awsProdUrl3: process.env.AWS_PROD_URL3 || "https://www.myvoice-myhealth.com",
 } as const;
 
 /**

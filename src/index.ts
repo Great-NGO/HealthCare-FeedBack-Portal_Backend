@@ -35,7 +35,7 @@ app.use(helmet());
 app.use(
   cors({
     origin: config.isProduction 
-      ? [config.corsOrigin, config.awsDevUrl]
+      ? [config.corsOrigin, config.awsDevUrl1, config.awsDevUrl2, config.awsProdUrl1, config.awsProdUrl2, config.awsProdUrl3]
       : [config.corsOrigin, 'http://localhost:8080', 'http://localhost:5173', 'http://localhost:3000', ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
