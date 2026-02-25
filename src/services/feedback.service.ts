@@ -1,7 +1,6 @@
 import { prisma } from "../config/prisma.js";
 import { notFoundError } from "../middleware/errorHandler.js";
 import type { FeedbackSubmission, FeedbackEvidence, FeedbackStatus, FeedbackType } from "@prisma/client";
-import { v4 as uuidv4 } from "uuid";
 import { emailService } from "./email.service.js";
 
 /**
@@ -83,13 +82,23 @@ interface UpdateFeedbackDto {
 export const feedbackService = {
   /**
    * Generates a unique reference ID for feedback
-   * Format: FB-YYYYMMDD-XXXXX (e.g., FB-20260120-A3B7C)
+   * Format: FB-<TYPE>-YYYYMMDD-XXXXX (e.g., FB-CMPLI-20260120-A3B7C)
+   * Where <TYPE> is derived from feedback_type (e.g., CMPLI for compliment, CMPLA for complaint)
    */
-  generateReferenceId(): string {
+  generateReferenceId(feedbackType: FeedbackType): string {
+    const typeCodes: Record<FeedbackType, string> = {
+      compliment: "CMPLI",
+      complaint: "CMPLA",
+      concern: "CNCER",
+      safety_incident: "SAFIN",
+      comment: "CMMNT",
+    };
+
+    const typeCode = typeCodes[feedbackType];
     const date = new Date();
     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
     const randomPart = Math.random().toString(36).substring(2, 7).toUpperCase();
-    return `FB-${dateStr}-${randomPart}`;
+    return `FB-${typeCode}-${dateStr}-${randomPart}`;
   },
 
   /**
@@ -97,15 +106,13 @@ export const feedbackService = {
    * Also creates pending entries for custom "Others" values
    */
   async create(data: CreateFeedbackDto): Promise<FeedbackSubmission & { emailStatus?: { confirmationSent: boolean; followupSent: boolean; adminNotificationSent: boolean } }> {
-    const surveyToken = uuidv4();
-    const referenceId = this.generateReferenceId();
+    const referenceId = this.generateReferenceId(data.feedback_type);
 
     const feedback = await prisma.feedbackSubmission.create({
       data: {
         ...data,
         reference_id: referenceId,
         incident_date: data.incident_date ? new Date(data.incident_date) : null,
-        survey_token: surveyToken,
       },
     });
 
@@ -245,7 +252,6 @@ export const feedbackService = {
           email: data.reporter_email,
           referenceId: feedback.reference_id,
           feedbackId: feedback.id,
-          surveyToken: surveyToken,
           feedbackType: data.feedback_type,
         });
         console.log(`Feedback emails sent for ${referenceId}:`, emailStatus);

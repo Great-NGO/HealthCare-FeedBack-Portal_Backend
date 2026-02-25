@@ -5,7 +5,6 @@ import adminRoutes from "./admin.routes.js";
 import facilityRoutes from "./facility.routes.js";
 import healthFacilityRoutes from "./healthFacility.routes.js";
 import pendingEntryRoutes from "./pendingEntry.routes.js";
-import surveyRoutes from "./survey.routes.js";
 import uploadRoutes from "./upload.routes.js";
 import ngoRoutes from "./ngo.routes.js";
 
@@ -21,7 +20,6 @@ router.use("/admins", adminRoutes);
 router.use("/facilities", facilityRoutes);
 router.use("/health-facilities", healthFacilityRoutes); // GRID3 health facilities data
 router.use("/pending-entries", pendingEntryRoutes);
-router.use("/surveys", surveyRoutes);
 router.use("/uploads", uploadRoutes);
 
 export default router;
