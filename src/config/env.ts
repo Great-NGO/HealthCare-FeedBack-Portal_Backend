@@ -54,7 +54,7 @@ export const config = {
  * @throws Error if required variables are missing
  */
 export function validateEnv(): void {
-  const required = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "AWS_DEV_URL"];
+  const required = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "AWS_DEV_URL1", "AWS_DEV_URL2", "AWS_PROD_URL1", "AWS_PROD_URL2"];
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
