@@ -8,3 +8,4 @@ export * from "./feedback.validators.js";
 export * from "./admin.validators.js";
 export * from "./facility.validators.js";
 export * from "./pendingEntry.validators.js";
+export * from "./survey.validators.js";
