@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "../config/database.js";
+import { config } from "../config/env.js";
 import { prisma } from "../config/prisma.js";
 import { AppError } from "../middleware/errorHandler.js";
 import { v4 as uuidv4 } from "uuid";
@@ -19,6 +20,10 @@ export const uploadService = {
     fileBuffer: Buffer,
     contentType: string = "audio/webm"
   ): Promise<string> {
+    if (!config.supabaseUrl?.trim()) {
+      console.error("[Upload] Voice upload failed: SUPABASE_URL not set");
+      throw new AppError(503, "UPLOAD_UNAVAILABLE", "Storage is not configured. Contact support.");
+    }
     const fileName = `voice-${Date.now()}-${uuidv4()}.webm`;
     const filePath = `voice-messages/${fileName}`;
 
@@ -30,6 +35,7 @@ export const uploadService = {
       });
 
     if (error) {
+      console.error("[Upload] Voice upload Supabase error:", error.message, error);
       throw new AppError(500, "UPLOAD_ERROR", `Failed to upload voice message: ${error.message}`);
     }
 

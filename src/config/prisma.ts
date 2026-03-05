@@ -20,10 +20,11 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient(): PrismaClient {
-  // Create PostgreSQL connection pool
+  // Create PostgreSQL connection pool (longer timeout for cold starts on Render/Neon)
   const pool = new Pool({
     connectionString: DATABASE_URL,
     ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 30000,
   });
   globalForPrisma.pool = pool;
 

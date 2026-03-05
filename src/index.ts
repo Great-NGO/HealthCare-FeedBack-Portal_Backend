@@ -131,8 +131,10 @@ const server = app.listen(PORT, async () => {
 ╚═══════════════════════════════════════════════════════════╝
   `);
 
-  // Pre-warm cache and start database keep-alive
-  await warmupHealthFacilityCache();
+  // Pre-warm cache in background so server is live immediately; retry once after delay if DB is cold
+  warmupHealthFacilityCache().catch(() => {
+    setTimeout(() => warmupHealthFacilityCache().catch(() => {}), 15000);
+  });
 });
 
 /**

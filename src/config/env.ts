@@ -61,13 +61,16 @@ export function validateEnv(): void {
     throw new Error(`Missing required environment variables: ${missing.join(", ")}`);
   }
 
-  // JWT_SECRET is required in production
+  // JWT_SECRET and Supabase service role (for uploads) required in production
   if (config.isProduction) {
     if (!process.env.JWT_SECRET) {
       throw new Error("JWT_SECRET is required in production");
     }
     if (config.jwtSecret.length < 32) {
       console.warn("WARNING: JWT_SECRET should be at least 32 characters in production");
+    }
+    if (!config.supabaseServiceRoleKey?.trim()) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is required in production for voice/evidence uploads");
     }
   } else if (!process.env.JWT_SECRET) {
     console.warn("WARNING: Using default JWT_SECRET for development. Set JWT_SECRET in .env for security.");
