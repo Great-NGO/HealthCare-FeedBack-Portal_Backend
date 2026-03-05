@@ -35,6 +35,41 @@ const getEmailHeaderLogo = (heightPx = 96) =>
 /** Brand text for emails (single word mark) */
 const emailBrandText = '<span style="color: #1E6B4A;">MyVoiceMyHealth</span>';
 
+const EMAIL_BRAND_PLAIN = "MyVoiceMyHealth";
+
+// Social media links (aligned with frontend FOOTER config)
+const SOCIAL_LINKS: { label: string; url: string }[] = [
+  {
+    label: "Facebook",
+    url: "https://web.facebook.com/profile.php?id=61588297084044",
+  },
+  {
+    label: "X",
+    url: "https://x.com/voice_my81040",
+  },
+  {
+    label: "TikTok",
+    url: "https://www.tiktok.com/@myvoicemyhealth0?lang=en-GB",
+  },
+  {
+    label: "Instagram",
+    url: "https://www.instagram.com/myvoicemyhealth1/",
+  },
+];
+
+const socialLinksHtml =
+  SOCIAL_LINKS.length > 0
+    ? `
+    <div style="margin-top: 10px;">
+      <span style="color: #64748b; font-size: 12px; display: block; margin-bottom: 6px;">Connect with us:</span>
+      ${SOCIAL_LINKS.map(
+        (link) =>
+          `<a href="${link.url}" style="color: #1E6B4A; text-decoration: none; margin-right: 12px;">${link.label}</a>`,
+      ).join("")}
+    </div>
+  `
+    : "";
+
 /**
  * Brand footer for emails – uses logo image and brand colors
  */
@@ -44,17 +79,59 @@ const brandFooter = `
       <div style="font-size: 20px; font-weight: bold; font-family: Arial, sans-serif;">${emailBrandText}</div>
     </div>
     <p style="color: #475569; font-size: 14px; margin: 0 0 10px 0;">
-      Your Voice Matters in Healthcare
+      Your voice shapes care.
     </p>
+    ${socialLinksHtml}
     <p style="color: #94a3b8; font-size: 12px; margin: 0;">
       This is an automated message from ${emailBrandText}. Please do not reply directly to this email.
     </p>
     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
       <p style="color: #94a3b8; font-size: 11px; margin: 0;">
-        © ${new Date().getFullYear()} ${emailBrandText}. All rights reserved.
+        © ${new Date().getFullYear()} MyVoiceMyHealth. All rights reserved.
       </p>
     </div>
   </div>
+`;
+
+const renderEmailLayout = (
+  contentHtml: string,
+  options?: {
+    headerLogoHeight?: number;
+    headerBackground?: string;
+    headerBorderBottomColor?: string;
+  },
+) => `
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${EMAIL_BRAND_PLAIN}</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#f3f4f6;">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse; background-color:#f3f4f6;">
+      <tr>
+        <td align="center" style="padding:24px 16px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="border-collapse:collapse; max-width:600px; width:100%; background-color:#ffffff;">
+            <tr>
+              <td align="center" style="background-color:${options?.headerBackground ?? BRAND_PRIMARY}; padding:24px 16px; ${
+                options?.headerBorderBottomColor ? `border-bottom: 1px solid ${options.headerBorderBottomColor};` : ""
+              }">
+                ${getEmailHeaderLogo(options?.headerLogoHeight ?? 96)}
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 20px 24px 20px; font-family: Arial, sans-serif; font-size:14px; line-height:1.5; color:#111827;">
+                ${contentHtml}
+                ${brandFooter}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
 `;
 
 /**
@@ -80,12 +157,9 @@ export const emailService = {
         from: EMAIL_FROM,
         to: [email],
         subject: "You've Been Added as an Admin - MyVoiceMyHealth",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 32px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(120)}
-            </div>
-            <h1 style="color: ${BRAND_PRIMARY};">Welcome to the Admin Team!</h1>
+        html: renderEmailLayout(
+          `
+            <h1 style="color: ${BRAND_PRIMARY}; margin: 0 0 16px 0;">Welcome to the Admin Team!</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
             <p>You have been added as an administrator to the MyVoiceMyHealth platform.</p>
             
@@ -104,19 +178,23 @@ export const emailService = {
 
             <p>You can now access the admin dashboard to manage feedback submissions, review pending entries, and help improve healthcare services.</p>
             
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${loginUrl}" 
-                 style="background-color: ${BRAND_PRIMARY}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-                Access Admin Dashboard
-              </a>
-            </div>
+            <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin: 30px auto;">
+              <tr>
+                <td align="center" bgcolor="${BRAND_PRIMARY}" style="border-radius: 8px;">
+                  <a href="${loginUrl}" 
+                     style="display: inline-block; padding: 14px 28px; font-weight: bold; font-family: Arial, sans-serif; font-size: 14px; color: #ffffff; text-decoration: none;">
+                    Access Admin Dashboard
+                  </a>
+                </td>
+              </tr>
+            </table>
             
             <p style="color: #6b7280; font-size: 14px;">
               If you have any questions, please contact your system administrator.
             </p>
-            ${brandFooter}
-          </div>
-        `,
+          `,
+          { headerLogoHeight: 120 },
+        ),
       });
 
       console.log(`Admin invite email sent to ${email}`);
@@ -143,28 +221,29 @@ export const emailService = {
         from: EMAIL_FROM,
         to: [email],
         subject: "Password Reset - MyVoiceMyHealth",
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 32px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(120)}
-            </div>
-            <h1 style="color: ${BRAND_PRIMARY};">Password Reset Request</h1>
+        html: renderEmailLayout(
+          `
+            <h1 style="color: ${BRAND_PRIMARY}; margin: 0 0 16px 0;">Password Reset Request</h1>
             <p>Hello${fullName ? ` ${fullName}` : ''},</p>
             <p>We received a request to reset your password. Click the button below to set a new password:</p>
             
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${resetUrl}?token=${resetToken}" 
-                 style="background-color: ${BRAND_PRIMARY}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-                Reset Password
-              </a>
-            </div>
+            <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin: 30px auto;">
+              <tr>
+                <td align="center" bgcolor="${BRAND_PRIMARY}" style="border-radius: 8px;">
+                  <a href="${resetUrl}?token=${resetToken}" 
+                     style="display: inline-block; padding: 14px 28px; font-weight: bold; font-family: Arial, sans-serif; font-size: 14px; color: #ffffff; text-decoration: none;">
+                    Reset Password
+                  </a>
+                </td>
+              </tr>
+            </table>
             
             <p style="color: #6b7280; font-size: 14px;">
               This link will expire in 1 hour. If you didn't request a password reset, please ignore this email.
             </p>
-            ${brandFooter}
-          </div>
-        `,
+          `,
+          { headerLogoHeight: 120 },
+        ),
       });
 
       console.log(`Password reset email sent to ${email}`);
@@ -192,21 +271,18 @@ export const emailService = {
         from: EMAIL_FROM,
         to: [email],
         subject: `Feedback Received - Reference: ${referenceId}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 32px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(120)}
-            </div>
-            <h1 style="color: ${BRAND_PRIMARY};">Thank You for Your Feedback</h1>
+        html: renderEmailLayout(
+          `
+            <h1 style="color: ${BRAND_PRIMARY}; margin: 0 0 16px 0;">Thank You for Your Feedback</h1>
             <p>We have successfully received your feedback submission.</p>
             <div style="background-color: ${BRAND_PRIMARY_SOFT}; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${BRAND_PRIMARY};">
               <p style="margin: 0;"><strong>Reference Number:</strong> ${referenceId}</p>
             </div>
             <p>Please keep this reference number for your records. You can use it to track the status of your submission.</p>
             <p>Our team will review your feedback and take appropriate action.</p>
-            ${brandFooter}
-          </div>
-        `,
+          `,
+          { headerLogoHeight: 120 },
+        ),
       });
 
       console.log(`Feedback confirmation email sent to ${email} for ${referenceId}`);
@@ -253,26 +329,27 @@ export const emailService = {
         from: EMAIL_FROM,
         to: adminEmails,
         subject: `New ${feedbackTypeLabel} Submitted - Reference: ${referenceId}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 24px 0; background-color: #f9fafb; border-bottom: 1px solid #e5e7eb; margin-bottom: 24px;">
-              ${getEmailHeaderLogo(72)}
-            </div>
+        html: renderEmailLayout(
+          `
             <h1 style="color: ${BRAND_PRIMARY}; text-align: center; margin: 0 0 16px 0;">New Feedback Submission</h1>
             <p>A new ${feedbackTypeLabel.toLowerCase()} has been submitted and requires your attention.</p>
             <div style="background-color: ${BRAND_PRIMARY_SOFT}; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${BRAND_PRIMARY};">
               <p style="margin: 0 0 8px 0;"><strong>Reference Number:</strong> ${referenceId}</p>
               <p style="margin: 0;"><strong>Type:</strong> ${feedbackTypeLabel}</p>
             </div>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${appUrl}/admin/feedback/${feedbackId}" 
-                 style="background-color: ${BRAND_PRIMARY}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-                View in Admin Dashboard
-              </a>
-            </div>
-            ${brandFooter}
-          </div>
-        `,
+            <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin: 30px auto;">
+              <tr>
+                <td align="center" bgcolor="${BRAND_PRIMARY}" style="border-radius: 8px;">
+                  <a href="${appUrl}/admin/feedback/${feedbackId}" 
+                     style="display: inline-block; padding: 14px 28px; font-weight: bold; font-family: Arial, sans-serif; font-size: 14px; color: #ffffff; text-decoration: none;">
+                    View in Admin Dashboard
+                  </a>
+                </td>
+              </tr>
+            </table>
+          `,
+          { headerLogoHeight: 72, headerBackground: "#f9fafb", headerBorderBottomColor: "#e5e7eb" },
+        ),
       });
 
       console.log("Admin notification emails sent");
@@ -300,12 +377,9 @@ export const emailService = {
         from: EMAIL_FROM,
         to: [email],
         subject: `Case Resolved - Reference: ${referenceId}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="text-align: center; padding: 28px 0; background-color: ${BRAND_PRIMARY}; margin-bottom: 30px;">
-              ${getEmailHeaderLogo(96)}
-            </div>
-            <h1 style="color: ${BRAND_PRIMARY};">Your Case Has Been Resolved</h1>
+        html: renderEmailLayout(
+          `
+            <h1 style="color: ${BRAND_PRIMARY}; margin: 0 0 16px 0;">Your Case Has Been Resolved</h1>
             <p>Dear Respondent,</p>
             <p>We are pleased to inform you that your feedback submission has been reviewed and the case has been resolved.</p>
             <div style="background-color: ${BRAND_PRIMARY_SOFT}; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${BRAND_PRIMARY};">
@@ -314,16 +388,20 @@ export const emailService = {
             </div>
             <p>Thank you for taking the time to share your feedback with us. Your input is valuable in helping us improve healthcare services for everyone.</p>
             <p>If you have any further concerns or would like to provide additional feedback, please don't hesitate to submit a new report through our portal.</p>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${appUrl}" 
-                 style="background-color: ${BRAND_PRIMARY}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-                Visit ${emailBrandText}
-              </a>
-            </div>
+            <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin: 30px auto;">
+              <tr>
+                <td align="center" bgcolor="${BRAND_PRIMARY}" style="border-radius: 8px;">
+                  <a href="${appUrl}" 
+                     style="display: inline-block; padding: 14px 28px; font-weight: bold; font-family: Arial, sans-serif; font-size: 14px; color: #ffffff; text-decoration: none;">
+                    Visit ${emailBrandText}
+                  </a>
+                </td>
+              </tr>
+            </table>
             <p>Best regards,<br>The ${emailBrandText} Team</p>
-            ${brandFooter}
-          </div>
-        `,
+          `,
+          { headerLogoHeight: 96 },
+        ),
       });
 
       console.log(`Case closed email sent to ${email} for ${referenceId}`);
