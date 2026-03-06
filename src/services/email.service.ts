@@ -63,9 +63,9 @@ const socialLinksHtml =
     <div style="margin-top: 10px;">
       <span style="color: #64748b; font-size: 12px; display: block; margin-bottom: 6px;">Connect with us:</span>
       ${SOCIAL_LINKS.map(
-        (link) =>
-          `<a href="${link.url}" style="color: #1E6B4A; text-decoration: none; margin-right: 12px;">${link.label}</a>`,
-      ).join("")}
+      (link) =>
+        `<a href="${link.url}" style="color: #1E6B4A; text-decoration: none; margin-right: 12px;">${link.label}</a>`,
+    ).join("")}
     </div>
   `
     : "";
@@ -114,9 +114,8 @@ const renderEmailLayout = (
         <td align="center" style="padding:24px 16px;">
           <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="border-collapse:collapse; max-width:600px; width:100%; background-color:#ffffff;">
             <tr>
-              <td align="center" style="background-color:${options?.headerBackground ?? BRAND_PRIMARY}; padding:24px 16px; ${
-                options?.headerBorderBottomColor ? `border-bottom: 1px solid ${options.headerBorderBottomColor};` : ""
-              }">
+              <td align="center" style="background-color:${options?.headerBackground ?? BRAND_PRIMARY}; padding:24px 16px; ${options?.headerBorderBottomColor ? `border-bottom: 1px solid ${options.headerBorderBottomColor};` : ""
+  }">
                 ${getEmailHeaderLogo(options?.headerLogoHeight ?? 96)}
               </td>
             </tr>
@@ -317,7 +316,11 @@ export const emailService = {
         return true; // Not an error, just no admins
       }
 
-      const adminEmails = admins.map((a) => a.email);
+      // Manually exclude specific emails from notifications
+      const adminEmails = admins
+        .map((a) => a.email)
+        .filter((email) => email.toLowerCase() !== "kelechi.nwosu@i4nnova.com");
+
       const appUrl = getAppUrl();
       const feedbackTypeLabel = feedbackType
         .replace("_", " ")
