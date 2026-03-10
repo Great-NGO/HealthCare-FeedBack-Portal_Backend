@@ -154,7 +154,7 @@ export const referralsService = {
       select: { id: true, partner_id: true, session_id: true, token_prefix: true, revoked_at: true, created_at: true },
     });
 
-    const url = `${config.corsOrigin}/?ref=${encodeURIComponent(partner.slug)}&t=${encodeURIComponent(token)}`;
+    const url = `${config.referralBaseUrl}/?ref=${encodeURIComponent(partner.slug)}&t=${encodeURIComponent(token)}`;
 
     return { ...link, url, token };
   },

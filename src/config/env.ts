@@ -27,6 +27,9 @@ export const config = {
   /** CORS origin */
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:8080",
 
+  /** Base URL used in generated referral links */
+  referralBaseUrl: process.env.REFERRAL_BASE_URL || process.env.AWS_DEV_URL2 || process.env.CORS_ORIGIN || "http://localhost:8080",
+
   /** JWT secret (if using custom JWT) */
   jwtSecret: process.env.JWT_SECRET || "your-secret-key",
 
