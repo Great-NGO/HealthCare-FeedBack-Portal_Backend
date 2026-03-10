@@ -41,6 +41,8 @@ interface CreateFeedbackDto {
   reporter_insurance_coverage?: string | null;
   reporter_healthcare_frequency?: string | null;
   reporter_sexuality?: string | null;
+  use_preference_anonymise?: boolean | null;
+  use_preference_advocacy?: boolean | null;
   patient_name?: string | null;
   patient_email?: string | null;
   patient_phone?: string | null;
@@ -59,6 +61,12 @@ interface CreateFeedbackDto {
   severity?: number | null;
   issue_classification?: string | null;
   issue_classification_other?: string | null;
+  life_threatening?: string | null;
+  needs_advocacy?: string | null;
+  advocacy_contact_name?: string | null;
+  advocacy_contact_phone?: string | null;
+  advocacy_contact_email?: string | null;
+  advocacy_contact_area?: string | null;
   voice_message_url?: string | null;
   voice_message_duration?: number | null;
   voice_transcription?: string | null;

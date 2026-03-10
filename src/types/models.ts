@@ -69,6 +69,8 @@ export interface FeedbackSubmission {
   patient_name: string | null;
   patient_email: string | null;
   patient_phone: string | null;
+  use_preference_anonymise: boolean | null;
+  use_preference_advocacy: boolean | null;
   feedback_type: FeedbackType;
   facility_type: string | null;
   facility_state: string | null;
@@ -84,6 +86,12 @@ export interface FeedbackSubmission {
   severity: number | null;
   issue_classification: string | null;
   issue_classification_other: string | null;
+  life_threatening: string | null;
+  needs_advocacy: string | null;
+  advocacy_contact_name: string | null;
+  advocacy_contact_phone: string | null;
+  advocacy_contact_email: string | null;
+  advocacy_contact_area: string | null;
   voice_message_url: string | null;
   voice_message_duration: number | null;
   voice_transcription: string | null;

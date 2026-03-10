@@ -125,6 +125,16 @@ export const createFeedbackValidators = [
     .isLength({ min: 1, max: 255 })
     .withMessage("Reporter sexuality must be between 1 and 255 characters"),
 
+  body("use_preference_anonymise")
+    .optional({ nullable: true })
+    .isBoolean()
+    .withMessage("use_preference_anonymise must be a boolean"),
+
+  body("use_preference_advocacy")
+    .optional({ nullable: true })
+    .isBoolean()
+    .withMessage("use_preference_advocacy must be a boolean"),
+
   body("reporter_phone")
     .optional({ nullable: true })
     .isString()
@@ -237,6 +247,47 @@ export const createFeedbackValidators = [
     .trim()
     .isLength({ min: 1, max: 500 })
     .withMessage("Issue classification other must be between 1 and 500 characters"),
+
+  body("life_threatening")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage("life_threatening must be a short string"),
+
+  body("needs_advocacy")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage("needs_advocacy must be a short string"),
+
+  body("advocacy_contact_name")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("advocacy_contact_name must be between 1 and 255 characters"),
+
+  body("advocacy_contact_phone")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("advocacy_contact_phone must be between 1 and 255 characters"),
+
+  body("advocacy_contact_email")
+    .optional({ nullable: true })
+    .isEmail()
+    .normalizeEmail()
+    .withMessage("advocacy_contact_email must be a valid email address"),
+
+  body("advocacy_contact_area")
+    .optional({ nullable: true })
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 255 })
+    .withMessage("advocacy_contact_area must be between 1 and 255 characters"),
 
   body("voice_message_url")
     .optional({ nullable: true })
