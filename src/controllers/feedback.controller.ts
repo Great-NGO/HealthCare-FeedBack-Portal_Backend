@@ -23,10 +23,13 @@ export const feedbackController = {
         anonymous: boolean;
         feedback_type: string;
         description: string;
+        ref?: string;
+        t?: string;
         [key: string]: unknown;
       };
 
-      const feedback = await feedbackService.create(data as any);
+      const { ref, t, ...body } = data;
+      const feedback = await feedbackService.create(body as any, { ref, t });
 
       res.status(201).json(
         createSuccessResponse(

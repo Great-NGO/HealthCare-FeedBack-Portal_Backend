@@ -5,6 +5,21 @@ import { FeedbackType, FeedbackStatus } from "../types/enums.js";
  * Validators for creating new feedback submission
  */
 export const createFeedbackValidators = [
+  // Optional referral attribution (query params)
+  query("ref")
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 80 })
+    .withMessage("ref must be a short string"),
+
+  query("t")
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ min: 8, max: 255 })
+    .withMessage("t must be a valid token string"),
+
   body("anonymous")
     .isBoolean()
     .withMessage("anonymous must be a boolean"),

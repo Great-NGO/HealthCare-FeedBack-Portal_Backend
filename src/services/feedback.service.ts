@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma.js";
 import { notFoundError } from "../middleware/errorHandler.js";
-import type { FeedbackSubmission, FeedbackEvidence, FeedbackStatus, FeedbackType } from "@prisma/client";
+import crypto from "node:crypto";
+import { Prisma, type FeedbackSubmission, type FeedbackEvidence, type FeedbackStatus, type FeedbackType } from "@prisma/client";
 import { emailService } from "./email.service.js";
 
 /**
@@ -113,8 +114,57 @@ export const feedbackService = {
    * Creates a new feedback submission and sends notification emails
    * Also creates pending entries for custom "Others" values
    */
-  async create(data: CreateFeedbackDto): Promise<FeedbackSubmission & { emailStatus?: { confirmationSent: boolean; followupSent: boolean; adminNotificationSent: boolean } }> {
+  async create(
+    data: CreateFeedbackDto,
+    referral?: { ref?: string; t?: string }
+  ): Promise<FeedbackSubmission & { emailStatus?: { confirmationSent: boolean; followupSent: boolean; adminNotificationSent: boolean } }> {
     const referenceId = this.generateReferenceId(data.feedback_type);
+
+    const sha256Hex = (value: string) => crypto.createHash("sha256").update(value).digest("hex");
+
+    const now = new Date();
+    const currentSession = await prisma.referralSession.findFirst({
+      where: {
+        is_active: true,
+        starts_at: { lte: now },
+        ends_at: { gte: now },
+      },
+      orderBy: { starts_at: "desc" },
+      select: { id: true },
+    });
+
+    const ref = typeof referral?.ref === "string" ? referral.ref.trim() : undefined;
+    const token = typeof referral?.t === "string" ? referral.t.trim() : undefined;
+
+    const referralLink =
+      currentSession && token
+        ? await prisma.partnerReferralLink.findFirst({
+            where: {
+              session_id: currentSession.id,
+              token_hash: sha256Hex(token),
+              revoked_at: null,
+              partner: {
+                is: {
+                  is_active: true,
+                  ...(ref ? { slug: ref } : {}),
+                },
+              },
+            },
+            select: {
+              id: true,
+              partner_id: true,
+              session_id: true,
+            },
+          })
+        : null;
+
+    const normalizedEmail = (() => {
+      const email = (data.reporter_email ?? data.patient_email ?? "").trim().toLowerCase();
+      return email.length > 0 ? email : null;
+    })();
+
+    const emailPepper = process.env.REFERRAL_EMAIL_PEPPER ?? "";
+    const emailHash = normalizedEmail ? sha256Hex(`${emailPepper}:${normalizedEmail}`) : null;
 
     const feedback = await prisma.feedbackSubmission.create({
       data: {
@@ -123,6 +173,33 @@ export const feedbackService = {
         incident_date: data.incident_date ? new Date(data.incident_date) : null,
       },
     });
+
+    if (referralLink && emailHash) {
+      try {
+        await prisma.referralCredit.create({
+          data: {
+            partner_id: referralLink.partner_id,
+            session_id: referralLink.session_id,
+            email_hash: emailHash,
+            feedback_id: feedback.id,
+          },
+        });
+
+        await prisma.feedbackSubmission.update({
+          where: { id: feedback.id },
+          data: {
+            partner_id: referralLink.partner_id,
+            referral_session_id: referralLink.session_id,
+            referral_link_id: referralLink.id,
+          },
+        });
+      } catch (error) {
+        // If duplicate credit (same partner+session+email), ignore and accept feedback normally
+        if (!(error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")) {
+          throw error;
+        }
+      }
+    }
 
     // Create pending entries for custom "Others" values
     const pendingEntriesToCreate: Array<{

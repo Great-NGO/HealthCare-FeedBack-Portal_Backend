@@ -86,17 +86,103 @@ model FeedbackSubmission {
   assigned_department           String?
   confirmation_email_sent       Boolean            @default(false)
   followup_email_sent           Boolean            @default(false)
+  partner_id                    String?
+  referral_session_id           String?
+  referral_link_id              String?
   created_at                    DateTime           @default(now())
   updated_at                    DateTime           @updatedAt
   evidence                      FeedbackEvidence[]
   pending_entries               PendingEntry[]
   survey_response               SurveyResponse?
+  partner                       Partner?           @relation(fields: [partner_id], references: [id])
+  referral_session              ReferralSession?   @relation(fields: [referral_session_id], references: [id])
+  referral_link                 PartnerReferralLink? @relation(fields: [referral_link_id], references: [id])
+  referral_credit               ReferralCredit?
 
   @@index([reference_id])
   @@index([status])
   @@index([created_at])
   @@index([feedback_type])
+  @@index([partner_id])
+  @@index([referral_session_id])
+  @@index([referral_link_id])
   @@map("feedback_submissions")
+}
+
+/// Partners that can receive referral credits
+model Partner {
+  id           String               @id @default(uuid())
+  display_name String
+  slug         String               @unique
+  is_active    Boolean              @default(true)
+  created_at   DateTime             @default(now())
+
+  links         PartnerReferralLink[]
+  credits       ReferralCredit[]
+  feedback      FeedbackSubmission[]
+
+  @@index([slug])
+  @@index([is_active])
+  @@map("partners")
+}
+
+/// Admin-defined time window for a referral campaign/session
+model ReferralSession {
+  id         String               @id @default(uuid())
+  name       String
+  starts_at  DateTime
+  ends_at    DateTime
+  is_active  Boolean              @default(true)
+  created_at DateTime             @default(now())
+
+  links    PartnerReferralLink[]
+  credits  ReferralCredit[]
+  feedback FeedbackSubmission[]
+
+  @@index([starts_at])
+  @@index([ends_at])
+  @@index([is_active])
+  @@map("referral_sessions")
+}
+
+/// A partner-specific referral link for a given session
+/// Store only a hash of the token to avoid leaking raw URLs if DB is compromised.
+model PartnerReferralLink {
+  id           String          @id @default(uuid())
+  partner_id   String
+  session_id   String
+  token_hash   String          @unique
+  token_prefix String
+  revoked_at   DateTime?
+  created_at   DateTime        @default(now())
+
+  partner Partner        @relation(fields: [partner_id], references: [id], onDelete: Cascade)
+  session ReferralSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  feedback FeedbackSubmission[]
+
+  @@index([partner_id])
+  @@index([session_id])
+  @@index([revoked_at])
+  @@map("partner_referral_links")
+}
+
+/// A single counted credit (deduped by email_hash per partner per session)
+model ReferralCredit {
+  id         String          @id @default(uuid())
+  partner_id String
+  session_id String
+  email_hash String
+  feedback_id String         @unique
+  created_at DateTime        @default(now())
+
+  partner  Partner         @relation(fields: [partner_id], references: [id], onDelete: Cascade)
+  session  ReferralSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  feedback FeedbackSubmission @relation(fields: [feedback_id], references: [id], onDelete: Cascade)
+
+  @@unique([partner_id, session_id, email_hash])
+  @@index([partner_id])
+  @@index([session_id])
+  @@map("referral_credits")
 }
 
 /// Evidence/attachments for feedback
