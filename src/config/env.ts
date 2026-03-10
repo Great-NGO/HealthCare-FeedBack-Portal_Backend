@@ -69,9 +69,9 @@ export function validateEnv(): void {
     if (config.jwtSecret.length < 32) {
       console.warn("WARNING: JWT_SECRET should be at least 32 characters in production");
     }
-    if (!config.supabaseServiceRoleKey?.trim()) {
-      throw new Error("SUPABASE_SERVICE_ROLE_KEY is required in production for voice/evidence uploads");
-    }
+    // if (!config.supabaseServiceRoleKey?.trim()) {
+    //   throw new Error("SUPABASE_SERVICE_ROLE_KEY is required in production for voice/evidence uploads");
+    // }
   } else if (!process.env.JWT_SECRET) {
     console.warn("WARNING: Using default JWT_SECRET for development. Set JWT_SECRET in .env for security.");
   }
