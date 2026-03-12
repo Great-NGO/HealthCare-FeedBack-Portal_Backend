@@ -182,8 +182,28 @@ export const createFeedbackValidators = [
   body("description")
     .isString()
     .trim()
-    .isLength({ min: 10, max: 5000 })
-    .withMessage("Description must be between 10 and 5000 characters"),
+    .custom((value, { req }) => {
+      const hasVoice =
+        typeof req.body.voice_message_url === "string" &&
+        req.body.voice_message_url.trim().length > 0;
+
+      const len = value.length;
+
+      // If there is a voice note, description is optional but must not exceed 5000 characters
+      if (hasVoice) {
+        if (len > 5000) {
+          throw new Error("Description must be at most 5000 characters");
+        }
+        return true;
+      }
+
+      // If there is no voice note, require a reasonably detailed description
+      if (len < 10 || len > 5000) {
+        throw new Error("Description must be between 10 and 5000 characters");
+      }
+
+      return true;
+    }),
 
   body("facility_type")
     .optional({ nullable: true })
