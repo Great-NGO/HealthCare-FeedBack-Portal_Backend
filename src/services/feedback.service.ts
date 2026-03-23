@@ -630,26 +630,14 @@ export const feedbackService = {
           },
           _count: { id: true },
         }),
-        prisma.$queryRaw<{ d: Date; c: bigint }[]>(
-          facilityName
-            ? Prisma.sql`
-                SELECT date(created_at) as d, count(*)::int as c
-                FROM feedback_submissions
-                WHERE created_at >= ${dateFromForSeries}
-                  AND created_at <= ${dateToForSeries}
-                  AND LOWER(facility_name) = LOWER(${facilityName})
-                GROUP BY date(created_at)
-                ORDER BY d
-              `
-            : Prisma.sql`
-                SELECT date(created_at) as d, count(*)::int as c
-                FROM feedback_submissions
-                WHERE created_at >= ${dateFromForSeries}
-                  AND created_at <= ${dateToForSeries}
-                GROUP BY date(created_at)
-                ORDER BY d
-              `
-        ),
+        prisma.$queryRaw<{ d: Date; c: bigint }[]>`
+          SELECT date(created_at) as d, count(*)::int as c
+          FROM feedback_submissions
+          WHERE created_at >= ${dateFromForSeries}
+            AND created_at <= ${dateToForSeries}
+          GROUP BY date(created_at)
+          ORDER BY d
+        `,
         prisma.feedbackSubmission.groupBy({
           by: ["issue_classification", "facility_state"],
           where: {

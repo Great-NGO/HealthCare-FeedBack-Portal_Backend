@@ -55,6 +55,17 @@ export const searchValidator = [
 ];
 
 /**
+ * DRY: Optional facility name filter for stats endpoint
+ */
+export const statsFilterValidators = [
+  query("facilityName")
+    .optional()
+    .isString()
+    .trim()
+    .withMessage("facilityName must be a string"),
+];
+
+/**
  * DRY: Reusable sort validators
  */
 export const sortValidators = [

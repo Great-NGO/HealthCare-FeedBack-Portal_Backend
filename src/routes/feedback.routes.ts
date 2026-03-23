@@ -6,11 +6,11 @@ import {
   idParamValidator,
   paginationValidators,
   dateRangeValidators,
+  statsFilterValidators,
   searchValidator,
   createFeedbackValidators,
   updateFeedbackValidators,
   feedbackFilterValidators,
-  facilityNameStatsValidator,
 } from "../validators/index.js";
 
 const router = Router();
@@ -36,7 +36,7 @@ router.get(
   "/stats",
   authenticate,
   requireAdmin,
-  [...dateRangeValidators, ...facilityNameStatsValidator],
+  [...dateRangeValidators, ...statsFilterValidators],
   validate,
   feedbackController.getStats
 );

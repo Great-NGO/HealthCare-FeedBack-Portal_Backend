@@ -380,18 +380,6 @@ export const updateFeedbackValidators = [
 ];
 
 /**
- * Validator for facilityName query param on stats endpoint
- */
-export const facilityNameStatsValidator = [
-  query("facilityName")
-    .optional()
-    .isString()
-    .trim()
-    .isLength({ min: 1, max: 500 })
-    .withMessage("facilityName must be a string between 1 and 500 characters"),
-];
-
-/**
  * Validators for feedback list filters
  */
 export const feedbackFilterValidators = [
