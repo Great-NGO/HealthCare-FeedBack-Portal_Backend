@@ -671,7 +671,6 @@ export const feedbackService = {
           where: {
             ...where,
             facility_name: { not: null },
-            issue_classification: { not: null },
           },
           _count: { id: true },
         }),
@@ -801,10 +800,10 @@ export const feedbackService = {
       count: number;
     }> = [];
     for (const row of issuesByFacilityNameRows) {
-      if (row.facility_name && row.issue_classification) {
+      if (row.facility_name) {
         issuesByFacilityName.push({
           facilityName: row.facility_name,
-          issueClassification: row.issue_classification,
+          issueClassification: row.issue_classification ?? "Uncategorized",
           count: row._count.id,
         });
       }
