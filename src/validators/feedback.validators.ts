@@ -392,4 +392,11 @@ export const feedbackFilterValidators = [
     .optional()
     .isIn([...Object.values(FeedbackStatus), "all"])
     .withMessage(`Status filter must be one of: ${Object.values(FeedbackStatus).join(", ")}, all`),
+
+  query("facilityName")
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 500 })
+    .withMessage("facilityName must be a string between 1 and 500 characters"),
 ];

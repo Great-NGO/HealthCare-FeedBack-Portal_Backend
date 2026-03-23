@@ -11,6 +11,7 @@ interface FeedbackFilters {
   type?: FeedbackType | "all";
   status?: FeedbackStatus | "all";
   search?: string;
+  facilityName?: string;
   dateFrom?: string;
   dateTo?: string;
   page?: number;
@@ -425,6 +426,10 @@ export const feedbackService = {
       };
     }
 
+    if (filters.facilityName) {
+      where.facility_name = { equals: filters.facilityName, mode: "insensitive" };
+    }
+
     if (filters.search) {
       where.OR = [
         { reference_id: { contains: filters.search, mode: "insensitive" } },
@@ -545,6 +550,8 @@ export const feedbackService = {
       byIssueAndStateRows,
       highSeverityByFacilityTypeRows,
       backlogByDepartmentRows,
+      byFacilityNameRows,
+      issuesByFacilityNameRows,
     ] =
       await Promise.all([
         prisma.feedbackSubmission.count({ where }),
@@ -651,6 +658,20 @@ export const feedbackService = {
             ...where,
             department: { not: null },
             status: { in: ["new", "in_review"] },
+          },
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["facility_name"],
+          where: { ...where, facility_name: { not: null } },
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["facility_name", "issue_classification"],
+          where: {
+            ...where,
+            facility_name: { not: null },
+            issue_classification: { not: null },
           },
           _count: { id: true },
         }),
@@ -767,6 +788,28 @@ export const feedbackService = {
       }
     }
 
+    const byFacilityName: Record<string, number> = {};
+    for (const row of byFacilityNameRows) {
+      if (row.facility_name) {
+        byFacilityName[row.facility_name] = row._count.id;
+      }
+    }
+
+    const issuesByFacilityName: Array<{
+      facilityName: string;
+      issueClassification: string;
+      count: number;
+    }> = [];
+    for (const row of issuesByFacilityNameRows) {
+      if (row.facility_name && row.issue_classification) {
+        issuesByFacilityName.push({
+          facilityName: row.facility_name,
+          issueClassification: row.issue_classification,
+          count: row._count.id,
+        });
+      }
+    }
+
     return {
       total,
       byType,
@@ -785,6 +828,8 @@ export const feedbackService = {
       issuesByStateAndTheme,
       highSeverityByFacilityType,
       backlogByDepartment,
+      byFacilityName,
+      issuesByFacilityName,
     };
   },
 
