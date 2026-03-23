@@ -504,7 +504,7 @@ export const feedbackService = {
   /**
    * Gets dashboard statistics
    */
-  async getStats(dateFrom?: string, dateTo?: string) {
+  async getStats(dateFrom?: string, dateTo?: string, facilityName?: string) {
     const where: any = {};
 
     if (dateFrom) {
@@ -516,6 +516,10 @@ export const feedbackService = {
         ...where.created_at,
         lte: new Date(`${dateTo}T23:59:59`),
       };
+    }
+
+    if (facilityName) {
+      where.facility_name = { equals: facilityName, mode: "insensitive" };
     }
 
     const weekAgo = new Date();
@@ -552,6 +556,7 @@ export const feedbackService = {
       backlogByDepartmentRows,
       byFacilityNameRows,
       issuesByFacilityNameRows,
+      feedbackTypeByFacilityRows,
     ] =
       await Promise.all([
         prisma.feedbackSubmission.count({ where }),
@@ -625,14 +630,26 @@ export const feedbackService = {
           },
           _count: { id: true },
         }),
-        prisma.$queryRaw<{ d: Date; c: bigint }[]>`
-          SELECT date(created_at) as d, count(*)::int as c
-          FROM feedback_submissions
-          WHERE created_at >= ${dateFromForSeries}
-            AND created_at <= ${dateToForSeries}
-          GROUP BY date(created_at)
-          ORDER BY d
-        `,
+        prisma.$queryRaw<{ d: Date; c: bigint }[]>(
+          facilityName
+            ? Prisma.sql`
+                SELECT date(created_at) as d, count(*)::int as c
+                FROM feedback_submissions
+                WHERE created_at >= ${dateFromForSeries}
+                  AND created_at <= ${dateToForSeries}
+                  AND LOWER(facility_name) = LOWER(${facilityName})
+                GROUP BY date(created_at)
+                ORDER BY d
+              `
+            : Prisma.sql`
+                SELECT date(created_at) as d, count(*)::int as c
+                FROM feedback_submissions
+                WHERE created_at >= ${dateFromForSeries}
+                  AND created_at <= ${dateToForSeries}
+                GROUP BY date(created_at)
+                ORDER BY d
+              `
+        ),
         prisma.feedbackSubmission.groupBy({
           by: ["issue_classification", "facility_state"],
           where: {
@@ -668,6 +685,14 @@ export const feedbackService = {
         }),
         prisma.feedbackSubmission.groupBy({
           by: ["facility_name", "issue_classification"],
+          where: {
+            ...where,
+            facility_name: { not: null },
+          },
+          _count: { id: true },
+        }),
+        prisma.feedbackSubmission.groupBy({
+          by: ["facility_name", "feedback_type"],
           where: {
             ...where,
             facility_name: { not: null },
@@ -809,6 +834,21 @@ export const feedbackService = {
       }
     }
 
+    const feedbackTypeByFacilityName: Array<{
+      facilityName: string;
+      feedbackType: string;
+      count: number;
+    }> = [];
+    for (const row of feedbackTypeByFacilityRows) {
+      if (row.facility_name) {
+        feedbackTypeByFacilityName.push({
+          facilityName: row.facility_name,
+          feedbackType: row.feedback_type,
+          count: row._count.id,
+        });
+      }
+    }
+
     return {
       total,
       byType,
@@ -829,6 +869,7 @@ export const feedbackService = {
       backlogByDepartment,
       byFacilityName,
       issuesByFacilityName,
+      feedbackTypeByFacilityName,
     };
   },
 

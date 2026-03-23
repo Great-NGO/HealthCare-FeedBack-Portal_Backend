@@ -82,9 +82,13 @@ export const feedbackController = {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { dateFrom, dateTo } = req.query as { dateFrom?: string; dateTo?: string };
+      const { dateFrom, dateTo, facilityName } = req.query as {
+        dateFrom?: string;
+        dateTo?: string;
+        facilityName?: string;
+      };
 
-      const stats = await feedbackService.getStats(dateFrom, dateTo);
+      const stats = await feedbackService.getStats(dateFrom, dateTo, facilityName);
 
       res.status(200).json(
         createSuccessResponse(stats, "Stats retrieved successfully", req.originalUrl, 200)
