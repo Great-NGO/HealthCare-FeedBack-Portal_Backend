@@ -516,8 +516,15 @@ export const feedbackService = {
       where.facility_name = { equals: facilityName, mode: "insensitive" };
     }
 
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
+    const startOfCurrentWeek = (() => {
+      const now = new Date();
+      const start = new Date(now);
+      const day = start.getDay();
+      const daysSinceMonday = (day + 6) % 7;
+      start.setDate(start.getDate() - daysSinceMonday);
+      start.setHours(0, 0, 0, 0);
+      return start;
+    })();
 
     const dateFromForSeries = dateFrom
       ? new Date(dateFrom)
@@ -533,9 +540,9 @@ export const feedbackService = {
       ? Prisma.sql`AND lower(facility_name) = lower(${facilityName})`
       : Prisma.empty;
     const newThisWeekStart =
-      createdAtFilter.gte && createdAtFilter.gte > weekAgo
+      createdAtFilter.gte && createdAtFilter.gte > startOfCurrentWeek
         ? createdAtFilter.gte
-        : weekAgo;
+        : startOfCurrentWeek;
     const newThisWeekCreatedAt: Prisma.DateTimeFilter = {
       gte: newThisWeekStart,
       ...(createdAtFilter.lte ? { lte: createdAtFilter.lte } : {}),
