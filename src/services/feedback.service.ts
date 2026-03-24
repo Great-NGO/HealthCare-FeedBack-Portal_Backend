@@ -505,18 +505,12 @@ export const feedbackService = {
    * Gets dashboard statistics
    */
   async getStats(dateFrom?: string, dateTo?: string, facilityName?: string) {
-    const where: any = {};
+    const createdAtFilter: Prisma.DateTimeFilter = {};
+    if (dateFrom) createdAtFilter.gte = new Date(dateFrom);
+    if (dateTo) createdAtFilter.lte = new Date(`${dateTo}T23:59:59`);
 
-    if (dateFrom) {
-      where.created_at = { gte: new Date(dateFrom) };
-    }
-
-    if (dateTo) {
-      where.created_at = {
-        ...where.created_at,
-        lte: new Date(`${dateTo}T23:59:59`),
-      };
-    }
+    const where: Prisma.FeedbackSubmissionWhereInput = {};
+    if (Object.keys(createdAtFilter).length > 0) where.created_at = createdAtFilter;
 
     if (facilityName) {
       where.facility_name = { equals: facilityName, mode: "insensitive" };
@@ -535,9 +529,21 @@ export const feedbackService = {
     const dateToForSeries = dateTo
       ? new Date(`${dateTo}T23:59:59`)
       : new Date();
+    const seriesFacilityFilter = facilityName
+      ? Prisma.sql`AND lower(facility_name) = lower(${facilityName})`
+      : Prisma.empty;
+    const newThisWeekStart =
+      createdAtFilter.gte && createdAtFilter.gte > weekAgo
+        ? createdAtFilter.gte
+        : weekAgo;
+    const newThisWeekCreatedAt: Prisma.DateTimeFilter = {
+      gte: newThisWeekStart,
+      ...(createdAtFilter.lte ? { lte: createdAtFilter.lte } : {}),
+    };
 
     const [
       total,
+      totalFacilities,
       newThisWeek,
       byTypeRows,
       byStatusRows,
@@ -560,10 +566,11 @@ export const feedbackService = {
     ] =
       await Promise.all([
         prisma.feedbackSubmission.count({ where }),
+        prisma.healthFacility.count(),
         prisma.feedbackSubmission.count({
           where: {
             ...where,
-            created_at: { ...where.created_at, gte: weekAgo },
+            created_at: newThisWeekCreatedAt,
           },
         }),
         prisma.feedbackSubmission.groupBy({
@@ -635,6 +642,7 @@ export const feedbackService = {
           FROM feedback_submissions
           WHERE created_at >= ${dateFromForSeries}
             AND created_at <= ${dateToForSeries}
+            ${seriesFacilityFilter}
           GROUP BY date(created_at)
           ORDER BY d
         `,
@@ -837,8 +845,20 @@ export const feedbackService = {
       }
     }
 
+    const facilitiesWithFeedback = Object.keys(byFacilityName).length;
+    const statusTotal = Object.values(byStatus).reduce((acc, value) => acc + value, 0);
+    const typeTotal = Object.values(byType).reduce((acc, value) => acc + value, 0);
+    const resolvedCount = (byStatus.resolved ?? 0) + (byStatus.closed ?? 0);
+    const inBacklog = (byStatus.new ?? 0) + (byStatus.in_review ?? 0);
+    const unresolvedCount = total - resolvedCount;
+    const resolutionRatePercent = total > 0 ? Math.round((resolvedCount / total) * 100) : 0;
+    const voiceNotePercent = total > 0 ? Math.round(((totalWithVoiceNote ?? 0) / total) * 100) : 0;
+
     return {
       total,
+      totalFacilities,
+      statusTotal,
+      typeTotal,
       byType,
       byStatus,
       byAgeRange,
@@ -858,6 +878,12 @@ export const feedbackService = {
       byFacilityName,
       issuesByFacilityName,
       feedbackTypeByFacilityName,
+      facilitiesWithFeedback,
+      resolvedCount,
+      unresolvedCount,
+      resolutionRatePercent,
+      inBacklog,
+      voiceNotePercent,
     };
   },
 
