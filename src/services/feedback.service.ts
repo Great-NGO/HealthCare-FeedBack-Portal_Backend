@@ -516,6 +516,15 @@ export const feedbackService = {
       where.facility_name = { equals: facilityName, mode: "insensitive" };
     }
 
+    const referenceDate = dateTo ? new Date(`${dateTo}T12:00:00`) : new Date();
+    const referenceDay = referenceDate.getDay();
+    const daysSinceMonday = (referenceDay + 6) % 7;
+    const calendarWeekStart = new Date(referenceDate);
+    calendarWeekStart.setDate(referenceDate.getDate() - daysSinceMonday);
+    calendarWeekStart.setHours(0, 0, 0, 0);
+    const calendarWeekEnd = new Date(calendarWeekStart);
+    calendarWeekEnd.setDate(calendarWeekStart.getDate() + 6);
+    calendarWeekEnd.setHours(23, 59, 59, 999);
 
     const dateFromForSeries = dateFrom
       ? new Date(dateFrom)
@@ -530,9 +539,23 @@ export const feedbackService = {
     const seriesFacilityFilter = facilityName
       ? Prisma.sql`AND lower(facility_name) = lower(${facilityName})`
       : Prisma.empty;
+    const newThisWeekRangeStart =
+      createdAtFilter.gte && createdAtFilter.gte > calendarWeekStart
+        ? createdAtFilter.gte
+        : calendarWeekStart;
+    const newThisWeekRangeEnd =
+      createdAtFilter.lte && createdAtFilter.lte < calendarWeekEnd
+        ? createdAtFilter.lte
+        : calendarWeekEnd;
+    const hasNewThisWeekOverlap = newThisWeekRangeStart <= newThisWeekRangeEnd;
+    const newThisWeekCreatedAt: Prisma.DateTimeFilter = hasNewThisWeekOverlap
+      ? { gte: newThisWeekRangeStart, lte: newThisWeekRangeEnd }
+      : {};
+
     const [
       total,
       totalFacilities,
+      newThisWeek,
       byTypeRows,
       byStatusRows,
       byAgeRows,
@@ -555,6 +578,14 @@ export const feedbackService = {
       await Promise.all([
         prisma.feedbackSubmission.count({ where }),
         prisma.healthFacility.count(),
+        hasNewThisWeekOverlap
+          ? prisma.feedbackSubmission.count({
+              where: {
+                ...where,
+                created_at: newThisWeekCreatedAt,
+              },
+            })
+          : Promise.resolve(0),
         prisma.feedbackSubmission.groupBy({
           by: ["feedback_type"],
           where,
@@ -845,6 +876,7 @@ export const feedbackService = {
       byStatus,
       byAgeRange,
       byGender,
+      newThisWeek,
       top3Themes,
       topComplimentThemes,
       totalWithVoiceNote: totalWithVoiceNote ?? 0,
