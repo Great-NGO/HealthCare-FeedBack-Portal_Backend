@@ -516,15 +516,6 @@ export const feedbackService = {
       where.facility_name = { equals: facilityName, mode: "insensitive" };
     }
 
-    const startOfCurrentWeek = (() => {
-      const now = new Date();
-      const start = new Date(now);
-      const day = start.getDay();
-      const daysSinceMonday = (day + 6) % 7;
-      start.setDate(start.getDate() - daysSinceMonday);
-      start.setHours(0, 0, 0, 0);
-      return start;
-    })();
 
     const dateFromForSeries = dateFrom
       ? new Date(dateFrom)
@@ -539,19 +530,9 @@ export const feedbackService = {
     const seriesFacilityFilter = facilityName
       ? Prisma.sql`AND lower(facility_name) = lower(${facilityName})`
       : Prisma.empty;
-    const newThisWeekStart =
-      createdAtFilter.gte && createdAtFilter.gte > startOfCurrentWeek
-        ? createdAtFilter.gte
-        : startOfCurrentWeek;
-    const newThisWeekCreatedAt: Prisma.DateTimeFilter = {
-      gte: newThisWeekStart,
-      ...(createdAtFilter.lte ? { lte: createdAtFilter.lte } : {}),
-    };
-
     const [
       total,
       totalFacilities,
-      newThisWeek,
       byTypeRows,
       byStatusRows,
       byAgeRows,
@@ -574,12 +555,6 @@ export const feedbackService = {
       await Promise.all([
         prisma.feedbackSubmission.count({ where }),
         prisma.healthFacility.count(),
-        prisma.feedbackSubmission.count({
-          where: {
-            ...where,
-            created_at: newThisWeekCreatedAt,
-          },
-        }),
         prisma.feedbackSubmission.groupBy({
           by: ["feedback_type"],
           where,
@@ -870,7 +845,6 @@ export const feedbackService = {
       byStatus,
       byAgeRange,
       byGender,
-      newThisWeek,
       top3Themes,
       topComplimentThemes,
       totalWithVoiceNote: totalWithVoiceNote ?? 0,
