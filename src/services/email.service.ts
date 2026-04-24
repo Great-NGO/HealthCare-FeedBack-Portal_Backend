@@ -23,23 +23,14 @@ const getAppUrl = () =>
  */
 // Use the shared frontend public logo so emails and app stay consistent
 const getLogoUrl = () => `${getAppUrl()}/logo.png`;
-const LOGO_SOURCE_WIDTH = 396;
-const LOGO_SOURCE_HEIGHT = 194;
-
-const getScaledLogoSize = (targetWidthPx: number) => ({
-  width: targetWidthPx,
-  height: Math.round((targetWidthPx * LOGO_SOURCE_HEIGHT) / LOGO_SOURCE_WIDTH),
-});
 
 /** Brand colors for email templates (aligned with app) */
 const BRAND_PRIMARY = "#1E6B4A"; // primary green
 const BRAND_PRIMARY_SOFT = "#DCFCE7"; // soft green background
 
 /** Logo HTML for email headers (logo image only) */
-const getEmailHeaderLogo = (targetWidthPx = 236) => {
-  const { width, height } = getScaledLogoSize(targetWidthPx);
-
-  return `<img src="${getLogoUrl()}" alt="MyVoiceMyHealth" width="${width}" height="${height}" style="display: block; width: ${width}px; height: ${height}px; margin: 0 auto; border: 0; outline: none; text-decoration: none;" />`;
+const getEmailHeaderLogo = (targetWidthPx = 300) => {
+  return `<img src="${getLogoUrl()}" alt="MyVoiceMyHealth" width="${targetWidthPx}" style="display: block; width: ${targetWidthPx}px; height: auto; margin: 0 auto; border: 0; outline: none; text-decoration: none;" />`;
 };
 
 /** Brand text for emails (single word mark) */
@@ -126,7 +117,7 @@ const renderEmailLayout = (
             <tr>
               <td align="center" style="background-color:${options?.headerBackground ?? BRAND_PRIMARY}; padding:24px 16px; ${options?.headerBorderBottomColor ? `border-bottom: 1px solid ${options.headerBorderBottomColor};` : ""
   }">
-                ${getEmailHeaderLogo(options?.headerLogoWidth ?? 236)}
+                ${getEmailHeaderLogo(options?.headerLogoWidth ?? 300)}
               </td>
             </tr>
             <tr>
@@ -202,7 +193,7 @@ export const emailService = {
               If you have any questions, please contact your system administrator.
             </p>
           `,
-          { headerLogoWidth: 256 },
+          { headerLogoWidth: 300 },
         ),
       });
 
@@ -251,7 +242,7 @@ export const emailService = {
               This link will expire in 1 hour. If you didn't request a password reset, please ignore this email.
             </p>
           `,
-          { headerLogoWidth: 256 },
+          { headerLogoWidth: 300 },
         ),
       });
 
@@ -290,7 +281,7 @@ export const emailService = {
             <p>Please keep this reference number for your records. You can use it to track the status of your submission.</p>
             <p>Our team will review your feedback and take appropriate action.</p>
           `,
-          { headerLogoWidth: 256 },
+          { headerLogoWidth: 300 },
         ),
       });
 
@@ -361,7 +352,7 @@ export const emailService = {
               </tr>
             </table>
           `,
-          { headerLogoWidth: 192, headerBackground: "#f9fafb", headerBorderBottomColor: "#e5e7eb" },
+          { headerLogoWidth: 260, headerBackground: "#f9fafb", headerBorderBottomColor: "#e5e7eb" },
         ),
       });
 
@@ -413,7 +404,7 @@ export const emailService = {
             </table>
             <p>Best regards,<br>The ${emailBrandText} Team</p>
           `,
-          { headerLogoWidth: 236 },
+          { headerLogoWidth: 300 },
         ),
       });
 
