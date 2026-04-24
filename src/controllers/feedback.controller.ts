@@ -3,6 +3,13 @@ import { matchedData } from "express-validator";
 import { feedbackService } from "../services/feedback.service.js";
 import { createSuccessResponse, type ApiResponse } from "../types/responses.js";
 import type { AuthenticatedRequest } from "../middleware/auth.js";
+import type { FeedbackStatus } from "../types/enums.js";
+
+interface UpdateFeedbackBody {
+  status?: FeedbackStatus;
+  admin_notes?: string | null;
+  assigned_department?: string | null;
+}
 
 /**
  * Feedback controller
@@ -159,7 +166,21 @@ export const feedbackController = {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { id, ...updateData } = matchedData(req) as { id: string; [key: string]: unknown };
+      const { id } = matchedData(req, { locations: ["params"] }) as { id: string };
+      const body = matchedData(req, {
+        locations: ["body"],
+        includeOptionals: true,
+      }) as UpdateFeedbackBody;
+
+      const updateData = {
+        ...(body.status !== undefined ? { status: body.status } : {}),
+        ...(Object.prototype.hasOwnProperty.call(body, "admin_notes")
+          ? { admin_notes: body.admin_notes ?? null }
+          : {}),
+        ...(Object.prototype.hasOwnProperty.call(body, "assigned_department")
+          ? { assigned_department: body.assigned_department ?? null }
+          : {}),
+      };
 
       const feedback = await feedbackService.update(id, updateData);
 

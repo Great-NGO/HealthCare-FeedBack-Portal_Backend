@@ -473,9 +473,19 @@ export const feedbackService = {
     // Get existing feedback to check for status change
     const existingFeedback = await this.getById(id);
 
+    const updateData: Prisma.FeedbackSubmissionUpdateInput = {
+      ...(data.status !== undefined ? { status: data.status } : {}),
+      ...(Object.prototype.hasOwnProperty.call(data, "admin_notes")
+        ? { admin_notes: data.admin_notes?.trim() || null }
+        : {}),
+      ...(Object.prototype.hasOwnProperty.call(data, "assigned_department")
+        ? { assigned_department: data.assigned_department?.trim() || null }
+        : {}),
+    };
+
     const feedback = await prisma.feedbackSubmission.update({
       where: { id },
-      data,
+      data: updateData,
     });
 
     // Send case closed email if status changed to 'closed' and reporter has email
